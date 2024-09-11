@@ -12,6 +12,6 @@ app.use(router);
 app.use(morgan('dev')); // Ver peticiones en consola
 
 
-app.set('port', configurations.port || 3000);
+app.set('port', configurations.port || 4000);
 
 export default app;
