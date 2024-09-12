@@ -8,6 +8,9 @@ const router = Router();
 /******Ejemplo*********/
 router.get('/', test.ejemplo);
 
+/******Test de la base de datos*********/
+router.get('/test_db', test.test_db);
+
 /******Authorizacion*********/
 
 export default router;
