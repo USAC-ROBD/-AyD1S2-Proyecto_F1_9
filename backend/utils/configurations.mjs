@@ -19,7 +19,7 @@ export default {
     port: process.env.PORT || 0,
     //Database
     host_db: process.env.DB_HOST || 'localhost',
-    port_db: process.env.DB_PORT || 5432,
+    port_db: process.env.DB_PORT || 3306,
     name_db: process.env.DB_NAME || '', 
     user: process.env.DB_USER || '',
     password: process.env.DB_PASSWORD || '',
