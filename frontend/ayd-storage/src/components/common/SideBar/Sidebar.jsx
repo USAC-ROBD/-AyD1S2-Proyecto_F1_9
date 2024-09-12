@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import '../../../styles/Sidebar.css';
-import { List, Stack, Toolbar, Typography, Divider } from "@mui/material";
-import assets from "../../../assets";
+import { List, Stack, Toolbar, Typography, Divider,Box,Button } from "@mui/material";
 import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import HomeIcon from '@mui/icons-material/Home';
+import StorageBar from "./StorageBar";
+import LogoutIcon from '@mui/icons-material/Logout';
+import colorConfigs from "../../../configs/colorConfigs";
 
 const Sidebar = () => {
   const [structDB, setStructDB] = useState([]);
@@ -27,6 +29,7 @@ const Sidebar = () => {
   }, []);
 
   return (
+    <Box sx={{ height: '100vh', position: 'relative' }}>
     <List disablePadding>
       <Toolbar sx={{
         marginBottom: "20px"
@@ -68,7 +71,26 @@ const Sidebar = () => {
           borderColor: "rgb(255 255 255 / 30%)"
         }}
       />
+      <StorageBar usedStorage={10} totalStorage={100} />
     </List>
+
+      <Box sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<LogoutIcon />}
+          sx={{ "&: hover": {
+                        backgroundColor: colorConfigs.sidebar.hoverBg
+                    },
+                    backgroundColor: colorConfigs.sidebar.hoverBg,
+                    paddingY: "12px",
+                    paddingLeft: `${12 * 0 + 12}px`,
+                    paddingRight: '12px',}}
+        >
+          Logout
+        </Button>
+      </Box>
+      </Box>
   );
 };
 
