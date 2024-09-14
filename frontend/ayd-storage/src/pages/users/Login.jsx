@@ -26,7 +26,7 @@ export default function Login() {
                     icon: 'error',
                     title: 'Failed to sign up!',
                     showConfirmButton: false,
-                    timer: 1500
+                    timer: 2000
                 });
                 return
             }
@@ -37,7 +37,7 @@ export default function Login() {
                 icon: data.icon,
                 title: data.message,
                 showConfirmButton: false,
-                timer: 1500
+                timer: 2000
             });
 
             if(data.icon === 'success') {
@@ -50,7 +50,7 @@ export default function Login() {
                 icon: 'error',
                 title: 'Failed to sign up!',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 2000
             });
         }
     };
@@ -66,7 +66,6 @@ export default function Login() {
                 justifyContent: 'center',
                 minHeight: '100vh',
                 bgcolor: '#1e293a',
-                borderRadius: 2,
                 boxShadow: 3,
                 p: 3,
             }}

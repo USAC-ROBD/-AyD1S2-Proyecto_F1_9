@@ -16,5 +16,6 @@ router.get('/test_db', test.test_db);
 router.get('/getCountries', users.getCountries)
 router.get('/login', users.login)
 router.post('/signup', users.signup)
+router.get('/confirmation', users.confirmation)
 
 export default router;
