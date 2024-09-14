@@ -4,6 +4,10 @@ import Signup from './pages/users/Signup';
 import Confirmation from './pages/users/Confirmation';
 import MainLayout from './components/layout/MainLayout';
 import {routes} from './routes';
+
+import Recovery from './pages/Recovery';
+import SetNewPassword from './pages/setNewPassword';
+
 import './App.css';
 
 function App() {
@@ -16,6 +20,8 @@ function App() {
           <Route path="/home" element={<MainLayout />}>
             {routes}
           </Route>
+          <Route path="/recovery" element={<Recovery />} />
+          <Route path="/setNewPassword" element={<SetNewPassword />} />
         </Routes>
     </BrowserRouter>
   );
