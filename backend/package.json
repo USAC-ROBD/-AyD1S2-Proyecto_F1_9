@@ -15,12 +15,17 @@
     "dotenv": "^16.4.5",
     "express": "^4.20.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "morgan": "^1.10.0",
     "mysql2": "^3.11.2",
     "nodemailer": "^6.9.15"
 =======
     "morgan": "^1.10.0"
 >>>>>>> 9835f09 (Revert "Merge branch 'Feature/BDD_201944994' into develop")
+=======
+    "morgan": "^1.10.0",
+    "mysql2": "^3.11.2"
+>>>>>>> 749edc1 (Reapply "Merge branch 'Feature/BDD_201944994' into develop")
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

@@ -13,6 +13,7 @@ const router = Router();
 router.get('/', test.ejemplo);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 /******Test de la base de datos*********/
 router.get('/test_db', test.test_db);
 
@@ -25,6 +26,11 @@ router.get('/confirmation', users.confirmation)
 router.post('/recovery', recovery.recuperarContrasena);
 router.post('/setNewPassword', setNewPassword.guardarNuevaContrasena);
 =======
+=======
+/******Test de la base de datos*********/
+router.get('/test_db', test.test_db);
+
+>>>>>>> 749edc1 (Reapply "Merge branch 'Feature/BDD_201944994' into develop")
 /******Authorizacion*********/
 >>>>>>> 9835f09 (Revert "Merge branch 'Feature/BDD_201944994' into develop")
 
