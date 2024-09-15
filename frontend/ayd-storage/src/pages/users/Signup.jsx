@@ -135,6 +135,13 @@ export default function Signup() {
     }
 
     useEffect(() => {
+        const user = localStorage.getItem('USUARIO')
+        if(user) {
+            navigate('/home')
+        }
+    }, [navigate])
+
+    useEffect(() => {
         getCountries()
     }, [])
 

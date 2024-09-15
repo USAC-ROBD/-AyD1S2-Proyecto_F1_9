@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import '../../../styles/Sidebar.css';
 import { List, Stack, Toolbar, Typography, Divider } from "@mui/material";
-import assets from "../../../assets";
 import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import HomeIcon from '@mui/icons-material/Home';
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const [structDB, setStructDB] = useState([]);
+  const navigate = useNavigate();
 
   const sideBarItems = [
     {
@@ -17,14 +18,22 @@ const Sidebar = () => {
         icon: <HomeIcon />,
         displayText: "Home",
       },
-      userType: 1, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Empleado, 3: Cliente         
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },
   ]
 
   useEffect(() => {
     //TODO: Verificar en el localStorage el tipo de usuario y mostrar los items correspondientes con un filter
-    setStructDB(sideBarItems);
-  }, []);
+    const userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
+    let filteredItems = [];
+    if (!userType) { // Si no hay usuario logueado
+      navigate('/');
+    } else {
+      filteredItems = sideBarItems.filter(item => item.userType === userType);
+    }
+
+    setStructDB(filteredItems);
+  }, [navigate]);
 
   return (
     <List disablePadding>

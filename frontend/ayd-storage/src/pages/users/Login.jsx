@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, TextField, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -7,6 +7,13 @@ export default function Login() {
     const navigate = useNavigate();
     const [userEmail, setUserEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    useEffect(() => {
+        const user = localStorage.getItem('USUARIO')
+        if(user) {
+            navigate('/home')
+        }
+    }, [navigate])
 
     const handleUserEmailChange = (event) => {
         setUserEmail(event.target.value)
@@ -41,8 +48,8 @@ export default function Login() {
             });
 
             if(data.icon === 'success') {
-                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL} = data.data
-                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL}))
+                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, ROL} = data.data
+                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, ROL}))
                 navigate('/home')
             }
         } catch(e) {
