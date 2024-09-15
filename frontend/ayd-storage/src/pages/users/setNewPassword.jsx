@@ -53,7 +53,7 @@ export default function SetNewPassword() {
                 body: JSON.stringify({ email: email_, password: password_ })
             });
     
-            const data = await response.json();
+            //const data = await response.json();
     
             if (!response.ok) {
                 Swal.fire({

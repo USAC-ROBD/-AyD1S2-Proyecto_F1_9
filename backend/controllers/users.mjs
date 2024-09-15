@@ -8,7 +8,7 @@ const getCountries = async (req, res) => {
 
 const login = async (req, res) => {
     const { userEmail, password } = req.query
-    const [rows, fields] = await db.query(`SELECT ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, CONFIRMADO FROM USUARIO WHERE (USUARIO = ? OR EMAIL = ?) AND CONTRASENA = SHA2(?, 256)`, [userEmail, userEmail, password])
+    const [rows, fields] = await db.query(`SELECT ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, CONFIRMADO, ROL FROM USUARIO WHERE (USUARIO = ? OR EMAIL = ?) AND CONTRASENA = SHA2(?, 256)`, [userEmail, userEmail, password])
 
     if(rows.length > 0) {
         if(rows[0].CONFIRMADO === 0) {

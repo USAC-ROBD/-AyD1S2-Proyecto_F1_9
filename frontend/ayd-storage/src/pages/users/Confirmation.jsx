@@ -46,6 +46,10 @@ export default function Confirmation() {
     }
 
     useEffect(() => {
+        const user = localStorage.getItem('USUARIO')
+        if(user) {
+            navigate('/home')
+        }
         confirmation()
     }, [])
 
