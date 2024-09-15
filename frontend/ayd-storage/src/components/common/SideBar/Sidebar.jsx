@@ -121,6 +121,10 @@ const Sidebar = () => {
             paddingLeft: `${12 * 0 + 12}px`,
             paddingRight: '12px',
           }}
+          onClick={() => {
+            localStorage.removeItem('USUARIO');
+            navigate('/');
+          }}
         >
           Logout
         </Button>
