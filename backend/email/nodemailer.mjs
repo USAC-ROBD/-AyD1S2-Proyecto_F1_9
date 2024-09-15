@@ -18,3 +18,14 @@ export const getMailOptions = (email, name, confirmationLink) => {
             <a href="${confirmationLink}">Confirm Account</a>`
     }
 }
+
+export const recoveryMail = (email, name, confirmationLink) => {
+    return {
+        from: process.env.EMAIL_ORIGIN,
+        to: email,
+        subject: 'Recovery your account of AyDStorage',
+        html: `<p>Hello ${name},</p>
+            <p>Recovery your account by clicking the link below:</p>
+            <a href="${confirmationLink}">Confirm Account</a>`
+    }
+}

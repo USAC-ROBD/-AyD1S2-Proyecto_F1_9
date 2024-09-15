@@ -1,6 +1,6 @@
 import configurations from "../utils/configurations.mjs";
 import db from "../utils/db_connection.mjs";
-import { transporter, getMailOptions } from '../email/nodemailer.mjs'
+import { transporter, recoveryMail } from '../email/nodemailer.mjs'
 
 
 
@@ -14,13 +14,14 @@ const recuperarContrasena = async (req, res) => {
             return res.status(404).json({ "status": 404, "message": "Correo electrónico no encontrado " + configurations.host + ":" + configurations.port });
         }
 
-        const confirmationLink = `${process.env.FRONT_URL}/setNewPassword/${email}`
-        const mailOptions = getMailOptions(email, name, confirmationLink)
+        const [dataUser, fields] = user
+        const confirmationLink = `${process.env.FRONT_URL}/setNewPassword?email=${email}`
+        const mailOptions = recoveryMail(email, dataUser[0].NOMBRE, confirmationLink)
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.log(error)
-                return res.status(500).json({status: 500, icon: 'error', message: 'Error sending confirmation email!'})
+            console.log(error)
+               return res.status(500).json({status: 500, icon: 'error', message: 'Error sending confirmation email!'})
             }
         })
 

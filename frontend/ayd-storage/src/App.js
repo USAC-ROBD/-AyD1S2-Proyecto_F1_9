@@ -2,11 +2,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Login from './pages/users/Login';
 import Signup from './pages/users/Signup';
 import Confirmation from './pages/users/Confirmation';
+import Recovery from './pages/users/Recovery';
+import SetNewPassword from './pages/users/setNewPassword';
 import MainLayout from './components/layout/MainLayout';
 import {routes} from './routes';
-
-import Recovery from './pages/Recovery';
-import SetNewPassword from './pages/setNewPassword';
 
 import './App.css';
 

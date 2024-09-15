@@ -1,12 +1,13 @@
 import React from "react";
-import '../styles/Recovery.css';
+import { useNavigate } from 'react-router-dom';
+import { TextField } from '@mui/material';
 import Swal from 'sweetalert2';
-import { transporter, getMailOptions } from '../email/nodemailer.mjs'
+import '../../styles/Recovery.css';
 
 
 
 export default function Recovery() {
-    
+    const navigate = useNavigate();
     var [isSubmitted, setIsSubmitted] = React.useState(false);
 
     const handleSubmit = (event) => {
@@ -48,14 +49,11 @@ export default function Recovery() {
                 setIsSubmitted(true);
             }
 
-
-
         } catch (error) {
             console.error("Error al verificar el correo electrónico:", error);
         }
+        navigate('/')
     }
-
-    // ...
 
     return (
         <div className="contenedor_recovery">
@@ -72,20 +70,28 @@ export default function Recovery() {
             <form onSubmit={handleSubmit}>
                 <center>
                     <h2>RECUPERAR CUENTA</h2>
-                    <span>Si olvidaste tu contraseña ingresa tu email para proceder!</span>
-                    <div>                       
-                        <input
-                            placeholder="Ingresa tu email"
-                            type="email"
-                            margin="normal"
-                            required
-                            id="email"
-                            label="Email Address"
-                            name="email"
-                            autoComplete="email"
-                            className="email_input"
-                            variant="outlined"
-                        />
+                    <div>   
+
+                    <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Email Address"
+                    name="email"
+                    autoComplete="email"
+                    autoFocus
+                    InputLabelProps={{
+                        style: { color: '#ccc' }
+                    }}
+                    InputProps={{
+                        style: { color: '#fff' }
+                    }}
+                    variant="outlined"
+                    sx={{ bgcolor: '#233044', borderRadius: 1, input: { color: 'white' } }}
+                />
+  
+                       
                     </div>
                     <button className="custom-button" type="submit">Submit</button>
                 </center>

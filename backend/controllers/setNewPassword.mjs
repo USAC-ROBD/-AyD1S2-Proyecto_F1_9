@@ -13,7 +13,7 @@ const guardarNuevaContrasena = async (req, res) => {
 
     try {
 
-        const updateQuery = "UPDATE USUARIO SET CONTRASENA = ? WHERE EMAIL = ?";
+        const updateQuery = "UPDATE USUARIO SET CONTRASENA = SHA2(?, 256) WHERE EMAIL = ?";
         const updateResult = await db.query(updateQuery, [password, email]);
 
         if (updateResult[0].affectedRows === 0) {

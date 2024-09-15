@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from "react";
-import '../styles/Recovery.css';
+import { TextField } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import '../../styles/Recovery.css';
 
 export default function SetNewPassword() {
-
+    const navigate = useNavigate();
     var [isSubmitted, setIsSubmitted] = React.useState(false); //verficiar si se renderiza el mensaje de exito :D
 
     const [correoElectronico, setCorreoElectronico] = useState('');
@@ -43,8 +44,6 @@ export default function SetNewPassword() {
     };
 
     async function establecerContrasena(email_, password_) {
-        console.log(email_, password_);
-    
         try {
             const response = await fetch("http://localhost:4000/setNewPassword", {
                 method: "POST",
@@ -55,20 +54,23 @@ export default function SetNewPassword() {
             });
     
             const data = await response.json();
-            console.log(data);
     
             if (!response.ok) {
-                throw new Error(data.message || 'Error desconocido');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Ocurrió un error al actualizar la contraseña',
+                    showConfirmButton: true,
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Contraseña actualizada!',
+                    text: 'Contraseña actualizada con éxito :D',
+                    showConfirmButton: false,
+                });
+                setIsSubmitted(true);
             }
-    
-            Swal.fire({
-                icon: 'success',
-                title: 'Contraseña actualizada!',
-                text: 'Contraseña actualizada con éxito :D',
-                showConfirmButton: false,
-            });
-            setIsSubmitted(true);
-    
         } catch (error) {
             console.error("Error al actualizar la contraseña:", error);
             Swal.fire({
@@ -78,6 +80,7 @@ export default function SetNewPassword() {
                 showConfirmButton: true,
             });
         }
+        navigate('/')
     }
 
     return (
@@ -99,27 +102,54 @@ export default function SetNewPassword() {
                         <span>Ingresa una contraseña nueva para poder acceder de nuevo :D</span>
             
                         <div>
-                            
-                            <input
-                                placeholder="Ingresa tu contraseña"
-                                className="email_input"
-                                required
-                                type="password"
-                                id="password"
-                                value={password}
-                                onChange={handlePasswordChange}
-                            />
+
+                        <TextField
+                            value={password}
+                            onChange={handlePasswordChange}
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type="password"
+                            id="password"
+                            autoComplete="current-password"
+                            InputLabelProps={{
+                                style: { color: '#ccc' }
+                            }}
+                            InputProps={{
+                                style: { color: '#fff' }
+                            }}
+                            variant="outlined"
+                            sx={{ bgcolor: '#233044', borderRadius: 1, input: { color: 'white' } }}
+                        />
+
+                        
                         </div>
                         <div className="form-group">
-                            <input
-                                placeholder="Confirma tu contraseña"
-                                className="email_input"
-                                required
-                                type="password"
-                                id="confirmPassword"
-                                value={confirmPassword}
-                                onChange={handleConfirmPasswordChange}
-                            />
+
+
+                        <TextField
+                            value={confirmPassword}
+                            onChange={handleConfirmPasswordChange}
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="confirmPassword"
+                            label="Password"
+                            type="password"
+                            id="confirmPassword"
+                            autoComplete="current-password"
+                            InputLabelProps={{
+                                style: { color: '#ccc' }
+                            }}
+                            InputProps={{
+                                style: { color: '#fff' }
+                            }}
+                            variant="outlined"
+                            sx={{ bgcolor: '#233044', borderRadius: 1, input: { color: 'white' } }}
+                        />
+
                         </div>
                         <button className="custom-button" type="submit">Submit</button>
                     </form>
