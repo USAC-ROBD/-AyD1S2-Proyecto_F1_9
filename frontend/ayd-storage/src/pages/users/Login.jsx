@@ -126,10 +126,19 @@ export default function Login() {
                 <Button
                     fullWidth
                     variant="outlined"
-                    sx={{ color: '#fff', borderColor: '#3f4a61', ':hover': { borderColor: '#fff' } }}
+                    sx={{ mt: 3, mb: 2, color: '#fff', borderColor: '#3f4a61', ':hover': { borderColor: '#fff' } }}
                     onClick={() => navigate("/signup")}
                 >
                     Create Account
+                </Button>
+
+                <Button
+                    fullWidth
+                    variant="outlined"
+                    sx={{ mt: 3, mb: 2, color: '#fff', borderColor: '#3f4a61', ':hover': { borderColor: '#fff' } }}
+                    onClick={() => navigate("/recovery")}
+                >
+                    Recovery Account
                 </Button>
             </Box>
         </Container>
