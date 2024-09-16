@@ -6,10 +6,10 @@ import configurations from './utils/configurations.mjs';
 
 const app = express();
 
+app.use(morgan('dev')); // Ver peticiones en consola
 app.use(cors());
 app.use(express.json());
 app.use(router);
-app.use(morgan('dev')); // Ver peticiones en consola
 
 
 app.set('port', configurations.port || 4000);

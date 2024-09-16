@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import '../../../styles/Sidebar.css';
-import { List, Stack, Toolbar, Typography, Divider } from "@mui/material";
+import { List, Stack, Toolbar, Typography, Divider, Box, Button } from "@mui/material";
 import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import HomeIcon from '@mui/icons-material/Home';
+import StorageBar from "./StorageBar";
+import LogoutIcon from '@mui/icons-material/Logout';
+import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  // Calcula el porcentaje de almacenamiento utilizado
+  const [usedStorage, setUsedStorage] = useState(0);
+  const [totalStorage, setTotalStorage] = useState(0); //varia dependiendo del plan del usuario
   const [structDB, setStructDB] = useState([]);
   const navigate = useNavigate();
 
@@ -33,51 +39,97 @@ const Sidebar = () => {
     }
 
     setStructDB(filteredItems);
-  }, [navigate]);
+    //obtenemos los datos del uso de almacenamiento
+    //sacamos el username
+    const username = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).USUARIO : undefined;
+    if (!username) return;
+    //TODO: Obtener el espacio de almacenamiento utilizado y total del usuario
+    fetch(`${process.env.REACT_APP_API_HOST}/getStorage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username: username })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          setUsedStorage(data.used);
+          setTotalStorage(data.total);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }, []);
 
   return (
-    <List disablePadding>
-      <Toolbar sx={{
-        marginBottom: "20px"
-      }}>
-        <Stack
-          sx={{ width: "100%", marginTop: "20px" }}
-          direction="column"
-          justifyContent="center"
-          alignItems="center"
+    <Box sx={{ height: '100vh', position: 'relative' }}>
+      <List disablePadding>
+        <Toolbar sx={{
+          marginBottom: "20px"
+        }}>
+          <Stack
+            sx={{ width: "100%", marginTop: "20px" }}
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Typography variant="h6" sx={{ marginTop: "20px" }}>
+              AYD
+            </Typography>
+            <Typography variant="h6">
+              Storage
+            </Typography>
+          </Stack>
+        </Toolbar>
+        <Divider variant="middle" component="li"
+          sx={{
+            marginTop: "5px",
+            marginBottom: "5px",
+            borderColor: "rgb(255 255 255 / 30%)"
+          }}
+        />
+        {structDB.map((item, index) => (
+          item.sidebarProps ? (
+            item.child ? (
+              <SidebarItemCollapse item={item} key={index} />
+            ) : (
+              <SidebarItem item={item} key={index} />
+            )
+          ) : null
+        ))}
+        <Divider variant="middle" component="li"
+          sx={{
+            marginTop: "5px",
+            marginBottom: "5px",
+            borderColor: "rgb(255 255 255 / 30%)"
+          }}
+        />
+        <StorageBar used={usedStorage} total={totalStorage} />
+      </List>
+
+      <Box sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<LogoutIcon />}
+          sx={{
+            "&: hover": {
+              backgroundColor: colorConfigs.sidebar.hoverBg
+            },
+            backgroundColor: colorConfigs.sidebar.hoverBg,
+            paddingY: "12px",
+            paddingLeft: `${12 * 0 + 12}px`,
+            paddingRight: '12px',
+          }}
+          onClick={() => {
+            localStorage.removeItem('USUARIO');
+            navigate('/');
+          }}
         >
-          <Typography variant="h6" sx={{ marginTop: "20px" }}>
-            AYD
-          </Typography>
-          <Typography variant="h6">
-            Storage
-          </Typography>
-        </Stack>
-      </Toolbar>
-      <Divider variant="middle" component="li"
-        sx={{
-          marginTop: "5px",
-          marginBottom: "5px",
-          borderColor: "rgb(255 255 255 / 30%)"
-        }}
-      />
-      {structDB.map((item, index) => (
-        item.sidebarProps ? (
-          item.child ? (
-            <SidebarItemCollapse item={item} key={index} />
-          ) : (
-            <SidebarItem item={item} key={index} />
-          )
-        ) : null
-      ))}
-      <Divider variant="middle" component="li"
-        sx={{
-          marginTop: "5px",
-          marginBottom: "5px",
-          borderColor: "rgb(255 255 255 / 30%)"
-        }}
-      />
-    </List>
+          Logout
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
