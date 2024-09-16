@@ -1,17 +1,12 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const result = dotenv.config({ path: path.join(__dirname,'..', '.env') });
+const result = dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 if (result.error) {
     // Si hubo un error al cargar el archivo .env, mostrarlo
     console.error("Error cargando .env:", result.error);
-  }
+}
 
 export default {
     
