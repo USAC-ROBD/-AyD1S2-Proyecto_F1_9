@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
 import folderImageFull from '../../assets/images/carpeta.png';
 import fileImage from '../../assets/images/documento.png';
+import FormUploadFile from './FormUploadFile';
+import FormCreateFolder from './FormCreateFolder';
 
 // Datos simulados
 const initialStructure = [
@@ -36,13 +39,13 @@ const initialStructure = [
   }
 ];
 
-const FileBrowser = () => {
+const FileBrowser = ({ folder }) => {
   const [currentFolder, setCurrentFolder] = useState(initialStructure);
   const [history, setHistory] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [renameFile, setRenameFile] = useState(null);
   const [newName, setNewName] = useState('');
-  
+
   const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
 
@@ -82,6 +85,27 @@ const FileBrowser = () => {
     setCurrentFolder(filtered);
   };
 
+  const handleUploadFile = (file) => {
+    const newFile = {
+      id : file.id,
+      name: file.name,
+      type: 'file'
+    };
+    // Agregar el nuevo archivo a la carpeta actual
+    setCurrentFolder([...currentFolder, newFile]);
+  }
+
+  const handleCreateFolder = (folder) => {
+    const newFolder = {
+      id : folder.id,
+      name: folder.name,
+      type: 'folder',
+      children: []
+    };
+    // Agregar la nueva carpeta a la carpeta actual
+    setCurrentFolder([...currentFolder, newFolder]);
+  }
+
   return (
     <Container
       component="main"
@@ -92,31 +116,57 @@ const FileBrowser = () => {
         color: '#fff',
         bgcolor: '#1e293a',
         p: 3,
+        height: '100vh',
+        position: 'relative'
       }}
     >
-      <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-        Explorador de Archivos
-      </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-        {currentFolder.map((item, index) => (
-          <Box
-            key={index}
-            onDoubleClick={() => item.type === 'folder' && enterFolder(item)}
-            onContextMenu={(e) => handleContextMenu(e, item)}
-            sx={{
-              margin: '10px',
-              textAlign: 'center',
-              cursor: 'pointer',
-            }}
-          >
-            <img
-              src={item.type === 'folder' ? (item.children.length > 0 ? folderImageFull : folderImageEmpty) : fileImage}
-              alt={item.name}
-              style={{ width: '50px', height: '50px' }}
-            />
-            <div>{item.name}</div>
+      
+      <Box sx={{ flexGrow: 1 }} >
+        <Grid container spacing={1}>
+          <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
+            <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
+              Explorador de Archivos
+            </Typography>
+          </Grid>
+          <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <FormUploadFile parentFolder={folder} onUploadFile={handleUploadFile} />
+          </Grid>
+          <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <FormCreateFolder parentFolder={folder} onCreateFolder={handleCreateFolder} />
+          </Grid>
+          
+
+        </Grid>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+            {currentFolder.map((item, index) => (
+              <Box
+                key={index}
+                onDoubleClick={() => item.type === 'folder' && enterFolder(item)}
+                onContextMenu={(e) => handleContextMenu(e, item)}
+                sx={{
+                  margin: '10px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <img
+                  src={item.type === 'folder' ? (item.children.length > 0 ? folderImageFull : folderImageEmpty) : fileImage}
+                  alt={item.name}
+                  style={{ width: '50px', height: '50px' }}
+                />
+                <div>{item.name}</div>
+              </Box>
+            ))}
           </Box>
-        ))}
       </Box>
 
       {contextMenu && (
@@ -145,14 +195,14 @@ const FileBrowser = () => {
               position: 'absolute',
               top: '-22px',
               right: '-20px',
-              color: '#fff', 
+              color: '#fff',
               border: '2px solid #ccc',
               backgroundColor: '#1e253a',
-              width: '35px', 
-              height: '35px', 
+              width: '35px',
+              height: '35px',
               zIndex: 1001,
               '&:hover': {
-                backgroundColor: '#3f4a61', 
+                backgroundColor: '#3f4a61',
               },
             }}
           >
@@ -209,14 +259,14 @@ const FileBrowser = () => {
               position: 'absolute',
               top: '-20px',
               right: '-20px',
-              color: '#fff', 
+              color: '#fff',
               border: '2px solid #ccc',
               backgroundColor: '#1e253a',
-              width: '35px', 
-              height: '35px', 
+              width: '35px',
+              height: '35px',
               zIndex: 1001,
               '&:hover': {
-                backgroundColor: '#3f4a61', 
+                backgroundColor: '#3f4a61',
               },
             }}
           >
@@ -266,7 +316,7 @@ const FileBrowser = () => {
           </Button>
         </Box>
       )}
-      
+
       {history.length > 0 && (
         <Button
           variant="contained"

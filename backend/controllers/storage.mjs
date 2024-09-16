@@ -8,17 +8,17 @@ const getStorage = async (req, res) => {
         if (!username) return res.status(400).json({ status: 400, message: 'User ID is required to get storage used' })
 
         //retorna una sola fila con la suma de los archivos en MB como used_MB
-        const [rows, fields] = await db.query(`select SUM(archivo.TAMANO_MB) AS used_MB from usuario 
+        const [rows, fields] = await db.query(`select SUM(archivo.TAMANO_B) AS used_B from usuario 
                                             INNER JOIN cuenta on usuario.ID_USUARIO = cuenta.ID_USUARIO 
                                             INNER JOIN carpeta on cuenta.ID_CUENTA = carpeta.ID_CUENTA
                                             INNER JOIN archivo on carpeta.ID_CARPETA = archivo.ID_CARPETA
                                             WHERE usuario.USUARIO = ?  GROUP BY usuario.USUARIO`, [username])
         
         //if (rows.length === 0) return res.status(404).json({ status: 404, message: 'User not found' })
-        //sacamos el espacio usado en GB
-        let used_MB = 0;
-        if(rows[0]) {
-            used_MB = (rows[0].used_MB / 1024).toFixed(2);
+        //sacamos el espacio usado en bytes y lo pasamos a GB
+        let used_B = 0;
+        if(rows[0]) {   //              kb    mb    gb
+            used_B = (rows[0].used_B / 1024 /1024/ 1024).toFixed(3);
         }
         //sacamos el total de almacenamiento en MB
 
@@ -33,7 +33,7 @@ const getStorage = async (req, res) => {
         }
 
         //retornamos el espacio usado y el total
-        return res.status(200).json({ status: 200, used:used_MB, total:total_GB })
+        return res.status(200).json({ status: 200, used:used_B, total:total_GB })
     } catch (error) {
         console.log(error)
         return res.status(500).json({ status: 500, message: 'Internal server error' })
