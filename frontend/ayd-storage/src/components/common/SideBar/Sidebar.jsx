@@ -4,6 +4,7 @@ import { List, Stack, Toolbar, Typography, Divider, Box, Button } from "@mui/mat
 import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import HomeIcon from '@mui/icons-material/Home';
+import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
 import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
 import colorConfigs from "../../../configs/colorConfigs";
@@ -14,15 +15,27 @@ const Sidebar = () => {
   const [usedStorage, setUsedStorage] = useState(0);
   const [totalStorage, setTotalStorage] = useState(0); //varia dependiendo del plan del usuario
   const [structDB, setStructDB] = useState([]);
+  const [rootFolder, setRootFolder] = useState(null);
   const navigate = useNavigate();
 
   const sideBarItems = [
     {
       level: 0,
       state: "Home",  // Estado para activar el color del item seleccionado, debe ser igual al estado del componente en el archivo de rutas
+      path: "/home",
       sidebarProps: {
         icon: <HomeIcon />,
         displayText: "Home",
+      },
+      userType: 4, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    {
+      level: 0,
+      state: "Files",
+      path: "/files",
+      sidebarProps: {
+        icon: <FolderCopyRoundedIcon />,
+        displayText: "Archivos",
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },

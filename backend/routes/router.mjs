@@ -5,6 +5,7 @@ import { users } from '../controllers/users.mjs';
 import {recovery} from '../controllers/recovery.mjs';
 import {setNewPassword} from '../controllers/setNewPassword.mjs';
 import {storage} from '../controllers/storage.mjs';
+import {files} from '../controllers/files.mjs';
 
 
 const router = Router();
@@ -27,5 +28,9 @@ router.post('/setNewPassword', setNewPassword.guardarNuevaContrasena);
 
 /**** Storage *******/
 router.post('/getStorage', storage.getStorage);
+
+/***** Files ****** */
+router.post('/getRootFolder', files.getRootFolder);
+router.post('/uploadFile', files.uploadFile);
 
 export default router;

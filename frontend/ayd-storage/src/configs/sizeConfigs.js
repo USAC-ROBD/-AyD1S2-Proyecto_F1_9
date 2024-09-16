@@ -1,6 +1,6 @@
 const sizeConfigs = {
     sidebar: {
-        width: "200px"
+        width: "240px"
     },
     topbar: {
         height: "60px"
