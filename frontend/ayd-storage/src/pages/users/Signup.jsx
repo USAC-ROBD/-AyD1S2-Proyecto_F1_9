@@ -18,6 +18,9 @@ export default function Signup() {
     const [phoneExtension, setPhoneExtension] = useState('')
     const [phone, setPhone] = useState('')
     const [countries, setCountries] = useState([])
+    const [plans, setPlans] = useState([])
+    const [idPlan, setIdPlan] = useState('')
+    const [plan, setPlan] = useState('')
 
     const handleNameChange = (event) => {
         setName(event.target.value);
@@ -52,6 +55,11 @@ export default function Signup() {
         setPhoneExtension(selectedCountry ? selectedCountry.code : '')
     }
 
+    const handlePlanChange = (event) => {
+        setPlan(event.target.value)
+        setIdPlan(event.target.value)
+    }
+
     const handleNationalityChange = (event) => {
         setNationality(event.target.value)
     }
@@ -65,18 +73,23 @@ export default function Signup() {
     }
 
     const getCountries = async () => {
-        const response = await fetch(`${process.env.REACT_APP_API_HOST}/getCountries`)
-        if(!response.ok) {
-            throw Error('Error al obtener paises disponibles')
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/getCountries`)
+            if (!response.ok) {
+                throw Error('Error al obtener paises disponibles')
+            }
+            const data = (await response.json()).data
+            setCountries(data)
+        } catch (e) {
+            console.error(e)
         }
-        const data = (await response.json()).data
-        setCountries(data)
+
     }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            if(passwordMatch) {
+            if (passwordMatch) {
                 const response = await fetch(`${process.env.REACT_APP_API_HOST}/signup`, {
                     method: 'POST', // Especifica que el método es POST
                     headers: {
@@ -91,10 +104,11 @@ export default function Signup() {
                         country: idCountry,
                         nationality,
                         phone: `${phoneExtension}${phone}`,
+                        plan: idPlan
                     })
                 })
 
-                if(!response.ok) {
+                if (!response.ok) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Failed to sign up!',
@@ -113,7 +127,7 @@ export default function Signup() {
                     timer: 2000
                 });
 
-                if(data.icon === 'success') {
+                if (data.icon === 'success') {
                     navigate("/")
                 }
                 return
@@ -136,13 +150,29 @@ export default function Signup() {
 
     useEffect(() => {
         const user = localStorage.getItem('USUARIO')
-        if(user) {
+        if (user) {
             navigate('/home')
         }
     }, [navigate])
 
     useEffect(() => {
         getCountries()
+    }, [])
+
+    useEffect(() => {
+        setPlans([{
+            id: 3,
+            name: 'Basic',
+            storage: 15
+        }, {
+            id: 2,
+            name: 'Standard',
+            storage: 50
+        }, {
+            id: 1,
+            name: 'Premium',
+            storage: 150
+        }])
     }, [])
 
     return (
@@ -347,7 +377,7 @@ export default function Signup() {
                         InputLabelProps={{ style: { color: '#ccc' } }}
                         InputProps={{ style: { color: '#fff' } }}
                         variant="outlined"
-                        sx={{ minWidth: { xs: '100%', sm: 120 }, bgcolor: '#233044', borderRadius: 1, input: { color: 'white' }  }}
+                        sx={{ minWidth: { xs: '100%', sm: 120 }, bgcolor: '#233044', borderRadius: 1, input: { color: 'white' } }}
                     />
 
                     <TextField
@@ -367,6 +397,37 @@ export default function Signup() {
                         sx={{ bgcolor: '#233044', borderRadius: 1, input: { color: 'white' } }}
                     />
                 </Box>
+
+                <FormControl fullWidth sx={{ mt: 2, bgcolor: '#233044', borderRadius: 1 }}>
+                    <InputLabel sx={{ color: '#ccc' }}>Storage Plan</InputLabel>
+                    <Select
+                        value={plan}
+                        required
+                        onChange={handlePlanChange}
+                        label="Storage Plan"
+                        sx={{
+                            color: '#fff'
+                        }}
+                    >
+                        {plans.map((plan) => (
+                            <MenuItem
+                                key={plan.name}
+                                value={plan.id}
+                                sx={{
+                                    bgcolor: '#233044',
+                                    color: '#fff',
+                                    '&:hover': { bgcolor: '#2a3f60', color: '#fff', },
+                                    "&.Mui-selected": { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                    '&.Mui-selected:hover': { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                    '&.Mui-focusVisible': { bgcolor: '#2a3f60', color: '#fff', },
+                                    '&.Mui-focusVisible.Mui-selected': { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                }}
+                            >
+                                {plan.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
 
                 <Button
                     type="submit"
