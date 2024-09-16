@@ -32,5 +32,6 @@ router.post('/getStorage', storage.getStorage);
 /***** Files ****** */
 router.post('/getRootFolder', files.getRootFolder);
 router.post('/uploadFile', files.uploadFile);
+router.post('/createFolder', files.createFolder);
 
 export default router;

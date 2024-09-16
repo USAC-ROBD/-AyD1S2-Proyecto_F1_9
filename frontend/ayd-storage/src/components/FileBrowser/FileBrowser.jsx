@@ -6,6 +6,7 @@ import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
 import folderImageFull from '../../assets/images/carpeta.png';
 import fileImage from '../../assets/images/documento.png';
 import FormUploadFile from './FormUploadFile';
+import FormCreateFolder from './FormCreateFolder';
 
 // Datos simulados
 const initialStructure = [
@@ -94,6 +95,17 @@ const FileBrowser = ({ folder }) => {
     setCurrentFolder([...currentFolder, newFile]);
   }
 
+  const handleCreateFolder = (folder) => {
+    const newFolder = {
+      id : folder.id,
+      name: folder.name,
+      type: 'folder',
+      children: []
+    };
+    // Agregar la nueva carpeta a la carpeta actual
+    setCurrentFolder([...currentFolder, newFolder]);
+  }
+
   return (
     <Container
       component="main"
@@ -111,7 +123,7 @@ const FileBrowser = ({ folder }) => {
       
       <Box sx={{ flexGrow: 1 }} >
         <Grid container spacing={1}>
-          <Grid item size={{ xs: 12, md: 9, lg: 10 }}>
+          <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
             <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
               Explorador de Archivos
             </Typography>
@@ -123,7 +135,18 @@ const FileBrowser = ({ folder }) => {
           }}>
             <FormUploadFile parentFolder={folder} onUploadFile={handleUploadFile} />
           </Grid>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+          <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <FormCreateFolder parentFolder={folder} onCreateFolder={handleCreateFolder} />
+          </Grid>
+          
+
+        </Grid>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
             {currentFolder.map((item, index) => (
               <Box
                 key={index}
@@ -144,12 +167,7 @@ const FileBrowser = ({ folder }) => {
               </Box>
             ))}
           </Box>
-
-        </Grid>
       </Box>
-
-
-
 
       {contextMenu && (
         <Box

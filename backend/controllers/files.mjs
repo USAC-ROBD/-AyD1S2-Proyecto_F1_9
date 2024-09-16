@@ -56,6 +56,34 @@ const uploadFile = async (req, res) => {
     }
 }
 
+const createFolder = async (req, res) => {
+    try{
+        //sacamos los valores del json
+        const { idUser, username, parentFolder, name } = req.body
+
+        if (!idUser || !username || !parentFolder || !name) return res.status(400).json({ status: 400, message: 'Uncomplete data to upload the file' })
+        
+        //obtenemos el id de la cuenta del usuario
+        
+        const [rows, fields] = await db.query(`SELECT cuenta.ID_CUENTA FROM cuenta where cuenta.ID_USUARIO = ?`, [idUser])
+
+        if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Account not found' })
+        
+        const idCuenta = rows[0].ID_CUENTA;
+
+        //insertamos la carpeta
+        const [rows2, fields2] = await db.query(`INSERT INTO carpeta (ID_CARPETA_PADRE, NOMBRE, ID_CUENTA, CREA, MODIFICA)
+                                                VALUES (?, ?, ?, ?, ?)`, [parentFolder, name, idCuenta, username, username])
+
+        //retornamos el id de la carpeta insertada
+        return res.status(200).json({ status: 200, file:rows2.insertId })
+    }catch(error){
+        console.log(error)
+        return res.status(500).json({ status: 500, message: 'Internal server error' })
+    }
+}
+
 export const files = { getRootFolder,
-                       uploadFile
+                       uploadFile,
+                       createFolder,
  }
