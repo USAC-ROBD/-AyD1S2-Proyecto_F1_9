@@ -20,7 +20,7 @@ const login = async (req, res) => {
 }
 
 const signup = async (req, res) => {
-    const {name, lastName, username, password, email, phone, country, nationality} = req.body
+    const {name, lastName, username, password, email, phone, country, nationality, plan} = req.body
     const [rows, fields] = await db.query(`SELECT 
             CASE
                 WHEN EXISTS (SELECT 1 FROM USUARIO WHERE USUARIO = ?) AND EXISTS (SELECT 1 FROM USUARIO WHERE EMAIL = ?) THEN 'The username and email are already registered'
@@ -39,6 +39,21 @@ const signup = async (req, res) => {
             )
         `, [name, lastName, username, password, email, phone, country, nationality, 2])
 
+        // insert de la cuenta asociada al usuario
+
+        const [result2] = await db.query(`
+            INSERT INTO CUENTA(
+                ID_USUARIO, ID_PAQUETE, FECHA_CREACION
+            ) VALUES (
+                ?, ?, current_date()
+            )
+        `, [result.insertId, plan])
+
+        // insert de la carpeta raiz asociada a la cuenta
+
+        const [result3] = await db.query(`
+            INSERT INTO CARPETA(NOMBRE, ID_CARPETA_PADRE, ID_CUENTA) VALUES ('', NULL, ?)`, [result2.insertId])
+        
         const confirmationLink = `${process.env.FRONT_URL}/confirmation/${result.insertId}`
         const mailOptions = getMailOptions(email, name, confirmationLink)
 
