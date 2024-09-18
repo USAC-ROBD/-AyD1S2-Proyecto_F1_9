@@ -16,17 +16,28 @@ export default function SettingsMenu() {
                 display: 'flex',
                 flexDirection: 'column',
                 width: '100%',
+                minHeight: '100vh',
                 bgcolor: '#1e293a',
                 p: 3,
             }}
         >
             {!activeComponent && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',  // Centra verticalmente
+                        gap: 2, 
+                        width: '100%', 
+                        height: '100%',  // Hace que el contenedor ocupe la altura completa
+                    }}
+                >
                     <Button
                         variant="contained"
                         fullWidth
                         onClick={() => setActiveComponent('create')}
-                        sx={{ bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' } }}
+                        sx={{ bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' }}}
                     >
                         Create Account
                     </Button>
@@ -34,7 +45,7 @@ export default function SettingsMenu() {
                         variant="contained"
                         fullWidth
                         onClick={() => setActiveComponent('modify')}
-                        sx={{ bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' } }}
+                        sx={{ bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' }}}
                     >
                         Modify Settings
                     </Button>
@@ -42,8 +53,18 @@ export default function SettingsMenu() {
             )}
 
             {activeComponent === 'create' && (
-                <Box sx={{ width: '100%' }}>
-                    <CreateAccount />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flexGrow: 1,
+                        justifyContent: 'space-between',
+                        width: '100%',
+                    }}
+                >
+                    <Box sx={{ flexGrow: 1 }}>
+                        <CreateAccount />
+                    </Box>
                     <Button
                         variant="outlined"
                         fullWidth
@@ -56,8 +77,18 @@ export default function SettingsMenu() {
             )}
 
             {activeComponent === 'modify' && (
-                <Box sx={{ width: '100%' }}>
-                    <ModifySettings />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flexGrow: 1,
+                        justifyContent: 'space-between',
+                        width: '100%',
+                    }}
+                >
+                    <Box sx={{ flexGrow: 1 }}>
+                        <ModifySettings />
+                    </Box>
                     <Button
                         variant="outlined"
                         fullWidth

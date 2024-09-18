@@ -34,4 +34,9 @@ router.post('/getRootFolder', files.getRootFolder);
 router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
 
+/******* Admin *******/
+router.get('/getAllAccounts', users.getAllAccounts)
+router.post('/createAccount',users.createAccount)
+router.post('/updateAccounts',users.updateAccounts)
+
 export default router;
