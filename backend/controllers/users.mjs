@@ -1,14 +1,5 @@
-import AWS from 'aws-sdk';
-import crypto from 'crypto';
 import db from "../utils/db_connection.mjs"
 import { transporter, getMailOptions } from '../email/nodemailer.mjs'
-
-AWS.config.update({
-    accessKeyId: process.env.ACCESS_KEY_ID,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY,
-    region: process.env.REGION
-});
-const s3 = new AWS.S3();
 
 const getCountries = async (req, res) => {
     const [rows, fields] = await db.query('SELECT ID_PAIS AS id, NOMBRE AS name, CODIGO AS code FROM AYD_STORAGE.PAIS')
@@ -121,13 +112,63 @@ const updateAccounts = async (req, res) => {
     }
 
     try {
-        const query = `
+        // Obtener el nombre de usuario (username) basado en el id_cuenta
+        const usernameQuery = `
+            SELECT u.USUARIO AS username
+            FROM CUENTA c
+            JOIN USUARIO u ON c.ID_USUARIO = u.ID_USUARIO
+            WHERE c.ID_CUENTA = ?
+        `;
+        const [userRows] = await db.query(usernameQuery, [id_cuenta]);
+
+        if (!userRows.length) {
+            return res.status(400).json({ status: 400, message: 'La cuenta no existe' });
+        }
+
+        const username = userRows[0].username;
+
+        // Realizar el POST a la API getStorage para obtener el almacenamiento
+        const storageResponse = await fetch(`${process.env.REACT_APP_API_HOST}/getStorage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ "username":username })
+        });
+
+        if (!storageResponse.ok) {
+            throw new Error('Error al obtener el almacenamiento de la cuenta');
+        }
+
+        const storageData = await storageResponse.json();
+        const usedStorage = parseFloat(storageData.used);  // Almacenamiento usado en GB
+
+        // Obtener la capacidad del nuevo paquete
+        const packageQuery = `
+            SELECT CAPACIDAD_GB FROM PAQUETE WHERE ID_PAQUETE = ?
+        `;
+        const [packageRows] = await db.query(packageQuery, [id_paquete]);
+
+        if (!packageRows.length) {
+            return res.status(400).json({ status: 400, message: 'El paquete seleccionado no existe' });
+        }
+
+        const newPackageCapacity = packageRows[0].CAPACIDAD_GB;
+
+        // Comprobar si el almacenamiento usado excede el nuevo paquete
+        if (usedStorage > newPackageCapacity) {
+            return res.status(400).json({
+                status: 400,
+                message: `El almacenamiento usado (${usedStorage} GB) excede la capacidad del paquete seleccionado (${newPackageCapacity} GB). No se puede actualizar.`
+            });
+        }
+
+        // Si no excede, proceder a actualizar el paquete en la cuenta
+        const updateQuery = `
             UPDATE CUENTA
             SET ID_PAQUETE = ?
             WHERE ID_CUENTA = ?
         `;
 
-        await db.query(query, [id_paquete, id_cuenta]);
+        await db.query(updateQuery, [id_paquete, id_cuenta]);
 
         return res.status(200).json({ status: 200, message: 'Cuenta actualizada exitosamente' });
     } catch (error) {
@@ -176,23 +217,10 @@ const createAccount = async (req, res) => {
                     )`,
                     [result.insertId, storagePackage, crea]);
 
-                // Generar un ID aleatorio para la carpeta raíz
-                const folderId = crypto.randomUUID();
-
-                // Crear una carpeta en AWS S3
-                const folderName = `${username}_${folderId}`;
-                const params = {
-                    Bucket: process.env.BUCKET,
-                    Key: `${folderName}/`,
-                    Body: '', // No es necesario añadir contenido, solo la carpeta
-                };
-
-                await s3.putObject(params).promise();
-
                 // Insertar la carpeta raíz asociada a la cuenta
                 await db.query(`
-                    INSERT INTO CARPETA(NOMBRE, ID_CARPETA_PADRE, ID_CUENTA) VALUES (?, NULL, ?)`,
-                    [folderName, result2.insertId]);
+                    INSERT INTO CARPETA(NOMBRE, ID_CARPETA_PADRE, ID_CUENTA) VALUES ('', NULL, ?)`,
+                    [result2.insertId]);
             }
 
             // Enviar el correo de confirmación
