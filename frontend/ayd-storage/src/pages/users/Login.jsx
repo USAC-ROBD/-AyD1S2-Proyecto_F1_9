@@ -48,8 +48,8 @@ export default function Login() {
             });
 
             if(data.icon === 'success') {
-                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, ROL} = data.data
-                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, ROL}))
+                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL} = data.data
+                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL}))
                 navigate('/home')
             }
         } catch(e) {
