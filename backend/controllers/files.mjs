@@ -8,16 +8,71 @@ const getRootFolder = async (req, res) => {
 
         if (!username) return res.status(400).json({ status: 400, message: 'User ID is required to get root folder' })
 
-        //retorna una sola fila con la suma de los archivos en MB como used_MB
-        const [rows, fields] = await db.query(`select carpeta.ID_CARPETA from usuario 
-                                            INNER JOIN cuenta on usuario.ID_USUARIO = cuenta.ID_USUARIO 
-                                            INNER JOIN carpeta on cuenta.ID_CUENTA = carpeta.ID_CUENTA
-                                            WHERE usuario.USUARIO = ? AND carpeta.ID_CARPETA_PADRE IS NULL AND carpeta.NOMBRE =''`, [username])
+        //retornamos la carpeta raíz
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA 
+                                                FROM USUARIO 
+                                                    INNER JOIN CUENTA on USUARIO.ID_USUARIO = CUENTA.ID_USUARIO 
+                                                    INNER JOIN CARPETA on CUENTA.ID_CUENTA = CARPETA.ID_CUENTA
+                                                WHERE USUARIO.USUARIO = ? AND CARPETA.ID_CARPETA_PADRE IS NULL AND CARPETA.NOMBRE =''`, [username])
         
         if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Root folder not found' })
 
-        //retornamos la carpeta raíz
-        return res.status(200).json({ status: 200, rootFolder:rows[0].ID_CARPETA })
+        return res.status(200).json({ status: 200, rootFolder: rows[0].ID_CARPETA })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, message: 'Internal server error' })
+    }
+}
+
+const getChildItems = async (req, res) => {
+    try {
+        //sacamos los valores del json
+        const { idFolder } = req.body
+
+        //retornamos los archivos y carpetas hijos de la carpeta
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
+                                                ,(  SELECT SUM(CANT)
+                                                    FROM (
+                                                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                                                        UNION 
+                                                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                                                        ) AS CHILDREN
+                                                ) AS CHILDREN
+                                                FROM CARPETA
+                                                WHERE CARPETA.ID_CARPETA_PADRE = ?`, [idFolder])
+
+        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
+                                                    FROM ARCHIVO
+                                                    WHERE ARCHIVO.ID_CARPETA = ?`, [idFolder])
+
+        const folders = rows.map(folder => {
+            return {
+                id: folder.ID_CARPETA,
+                name: folder.NOMBRE,
+                type: 'folder',
+                created: folder.CREA,
+                modified: folder.MODIFICA,
+                createdDate: folder.CREACION,
+                modifiedDate: folder.MODIFICACION,
+                children: folder.CHILDREN
+            }
+        });
+
+        const files = rows2.map(file => {
+            return {
+                id: file.ID_ARCHIVO,
+                name: file.NOMBRE,
+                type: 'file',
+                size: file.TAMANO_B,
+                key: file.KEY_S3,
+                created: file.CREA,
+                modified: file.MODIFICA,
+                createdDate: file.CREACION,
+                modifiedDate: file.MODIFICACION,
+            }
+        });
+
+        return res.status(200).json({ status: 200, children: [...folders, ...files] })
     } catch (error) {
         console.log(error)
         return res.status(500).json({ status: 500, message: 'Internal server error' })
@@ -45,7 +100,7 @@ const uploadFile = async (req, res) => {
         const key_s3 = `/Archivos/${nombreImagen}`;        
 
         //insertamos el archivo
-        const [rows, fields] = await db.query(`INSERT INTO archivo (ID_CARPETA, NOMBRE, TAMANO_B, KEY_S3, CREA, MODIFICA, FECHA_CREACION) 
+        const [rows, fields] = await db.query(`INSERT INTO ARCHIVO (ID_CARPETA, NOMBRE, TAMANO_B, KEY_S3, CREA, MODIFICA, FECHA_CREACION) 
                                                 VALUES (?, ?, ?, ?, ?, ?, current_date())`, [folder, file.name, file.size, key_s3, username,username])
 
         //retornamos el id del archivo insertado
@@ -65,25 +120,26 @@ const createFolder = async (req, res) => {
         
         //obtenemos el id de la cuenta del usuario
         
-        const [rows, fields] = await db.query(`SELECT cuenta.ID_CUENTA FROM cuenta where cuenta.ID_USUARIO = ?`, [idUser])
+        const [rows, fields] = await db.query(`SELECT CUENTA.ID_CUENTA FROM CUENTA where CUENTA.ID_USUARIO = ?`, [idUser])
 
         if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Account not found' })
         
         const idCuenta = rows[0].ID_CUENTA;
 
         //insertamos la carpeta
-        const [rows2, fields2] = await db.query(`INSERT INTO carpeta (ID_CARPETA_PADRE, NOMBRE, ID_CUENTA, CREA, MODIFICA)
+        const [rows2, fields2] = await db.query(`INSERT INTO CARPETA (ID_CARPETA_PADRE, NOMBRE, ID_CUENTA, CREA, MODIFICA)
                                                 VALUES (?, ?, ?, ?, ?)`, [parentFolder, name, idCuenta, username, username])
 
         //retornamos el id de la carpeta insertada
-        return res.status(200).json({ status: 200, file:rows2.insertId })
+        return res.status(200).json({ status: 200, folder:rows2.insertId })
     }catch(error){
         console.log(error)
         return res.status(500).json({ status: 500, message: 'Internal server error' })
     }
 }
 
-export const files = { getRootFolder,
-                       uploadFile,
-                       createFolder,
+export const files = {  getRootFolder,
+                        getChildItems,
+                        uploadFile,
+                        createFolder,
  }
