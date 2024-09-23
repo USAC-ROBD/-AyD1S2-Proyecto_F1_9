@@ -45,7 +45,7 @@ export default function SetNewPassword() {
 
     async function establecerContrasena(email_, password_) {
         try {
-            const response = await fetch("http://localhost:4000/setNewPassword", {
+            const response = await fetch(`${process.env.FRONT_URL}/setNewPassword`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -59,14 +59,14 @@ export default function SetNewPassword() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Ocurrió un error al actualizar la contraseña',
+                    text: 'An error occurred while updating the password',
                     showConfirmButton: true,
                 });
             } else {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Contraseña actualizada!',
-                    text: 'Contraseña actualizada con éxito :D',
+                    title: 'Password Updated!',
+                    text: 'Password updated successfully :D',
                     showConfirmButton: false,
                 });
                 setIsSubmitted(true);
@@ -76,7 +76,7 @@ export default function SetNewPassword() {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: error.message || 'Ocurrió un error al actualizar la contraseña',
+                text: error.message || 'An error occurred while updating the password',
                 showConfirmButton: true,
             });
         }
@@ -89,8 +89,8 @@ export default function SetNewPassword() {
             {isSubmitted ? (
                 <div>
                     <center>
-                        <h2>Nueva contraseña</h2>
-                        <span>Contraseña actualizada con éxito :D</span>
+                        <h2>New Password</h2>
+                        <span>Password updated successfully :D</span>
                     </center>
                 </div>
 
@@ -98,8 +98,8 @@ export default function SetNewPassword() {
                 <center>
                     <form onSubmit={handleSubmit}>
                         
-                        <h2>Nueva contraseña</h2>
-                        <span>Ingresa una contraseña nueva para poder acceder de nuevo :D</span>
+                        <h2>New Password</h2>
+                        <span>Enter a new password to regain access :D</span>
             
                         <div>
 
@@ -136,7 +136,7 @@ export default function SetNewPassword() {
                             required
                             fullWidth
                             name="confirmPassword"
-                            label="Password"
+                            label="Confirm Password"
                             type="password"
                             id="confirmPassword"
                             autoComplete="current-password"
