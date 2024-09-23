@@ -6,6 +6,10 @@ import {recovery} from '../controllers/recovery.mjs';
 import {setNewPassword} from '../controllers/setNewPassword.mjs';
 import {storage} from '../controllers/storage.mjs';
 import {files} from '../controllers/files.mjs';
+import {getCurrentStorageUser} from '../controllers/getCurrentStorage.mjs';
+import {changeStorageRequestUser} from '../controllers/changeStorageRequest.mjs';
+import {deleteAccountRequestUser} from '../controllers/deleteAccountRequest.mjs';
+import {registerDeleteAccountRequestUser} from '../controllers/registerDeleteAccountRequest.mjs';
 
 
 const router = Router();
@@ -34,5 +38,14 @@ router.post('/getRootFolder', files.getRootFolder);
 router.post('/getChildItems', files.getChildItems);
 router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
+
+/***** Storage user ******/
+router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
+router.post('/changeStorageRequest', changeStorageRequestUser.changeStorageRequest);
+
+/***** Delete account ******/
+router.post('/deleteAccountRequest', deleteAccountRequestUser.deleteAccountRequest);
+router.post('/registerDeleteAccountRequest', registerDeleteAccountRequestUser.registerDeleteAccountRequest);
+
 
 export default router;

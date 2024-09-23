@@ -22,7 +22,7 @@ export default function Recovery() {
 
         try {
 
-            const response = await fetch("http://localhost:4000/recovery", {
+            const response = await fetch(`${process.env.FRONT_URL}/recovery`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -36,14 +36,14 @@ export default function Recovery() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Correo electrónico no encontrado!',
+                    text: 'Email not found!',
                     showConfirmButton: false,
                 });
             } else {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Correo enviado!',
-                    text: 'Revisa tu correo para recuperar tu cuenta te esperamos :D',
+                    title: 'Email sent!',
+                    text: 'Check your email to recover your account, we are waiting for you :D',
                     showConfirmButton: false,
                 });
                 setIsSubmitted(true);
@@ -61,15 +61,15 @@ export default function Recovery() {
             {isSubmitted ? (
                 <div>
                     <center>
-                        <h2>RECUPERAR CUENTA</h2>
-                        <span>Revisa tu correo para recuperar tu cuenta te esperamos :D</span>
+                        <h2>RECOVER ACCOUNT</h2>
+                        <span>Check your email to recover your account, we are waiting for you :D</span>
                     </center>
                 </div>
-            ):(
+            ) : (
             
             <form onSubmit={handleSubmit}>
                 <center>
-                    <h2>RECUPERAR CUENTA</h2>
+                    <h2>RECOVER ACCOUNT</h2>
                     <div>   
 
                     <TextField
