@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import {triggerAction} from '../../redux/features/storageBarSlice';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
@@ -9,6 +11,7 @@ import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
 
 const FileBrowser = ({ folder }) => {
+  const dispatch = useDispatch();
   const [currentFolderId, setCurrentFolderId] = useState(folder);
   const [currentFolder, setCurrentFolder] = useState([]);
   const [history, setHistory] = useState([]);
@@ -90,6 +93,8 @@ const FileBrowser = ({ folder }) => {
     };
     // Agregar el nuevo archivo a la carpeta actual
     setCurrentFolder([...currentFolder, newFile]);
+    // actualizar la barra de almacenamiento en el sidebar
+    dispatch(triggerAction());
   }
 
   const handleCreateFolder = (folder) => {
@@ -143,7 +148,7 @@ const FileBrowser = ({ folder }) => {
 
         </Grid>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', paddingTop: '10px' }}>
           {currentFolder.map((item, index) => (
             <Box
               key={index}

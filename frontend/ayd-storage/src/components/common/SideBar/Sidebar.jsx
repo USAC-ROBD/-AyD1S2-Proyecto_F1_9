@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
+import { useSelector, useDispatch } from "react-redux";
 import '../../../styles/Sidebar.css';
 import { List, Stack, Toolbar, Typography, Divider, Box, Button } from "@mui/material";
 import SidebarItem from "./SidebarItem";
@@ -10,13 +11,17 @@ import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
 import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
+import { resetAction } from "../../../redux/features/storageBarSlice";
 
 const Sidebar = () => {
+  const actionTriggered = useSelector((state) => {
+    return state.updateStorageBar.actionTriggered;
+  }); // Escucha el cambio de estado
+  const dispatch = useDispatch();
   // Calcula el porcentaje de almacenamiento utilizado
   const [usedStorage, setUsedStorage] = useState(0);
   const [totalStorage, setTotalStorage] = useState(0); //varia dependiendo del plan del usuario
   const [structDB, setStructDB] = useState([]);
-  const [rootFolder, setRootFolder] = useState(null);
   const navigate = useNavigate();
 
   const sideBarItems = [
@@ -53,6 +58,14 @@ const Sidebar = () => {
   ]
 
   useEffect(() => {
+    // Este efecto se activará cuando `actionTriggered` cambie para actualizar el la barra de almacenamiento
+    if (actionTriggered) {
+      fetchStorage();
+      dispatch(resetAction()); // Resetea el estado
+    }
+  }, [actionTriggered]);
+
+  useEffect(() => {
     //TODO: Verificar en el localStorage el tipo de usuario y mostrar los items correspondientes con un filter
     const userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
     let filteredItems = [];
@@ -63,6 +76,10 @@ const Sidebar = () => {
     }
 
     setStructDB(filteredItems);
+    fetchStorage();
+  }, []);
+
+  const fetchStorage = async () => {
     //obtenemos los datos del uso de almacenamiento
     //sacamos el username
     const username = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).USUARIO : undefined;
@@ -83,7 +100,7 @@ const Sidebar = () => {
         }
       })
       .catch(error => console.error('Error:', error));
-  }, []);
+  }
 
   return (
     <Box sx={{ height: '100vh', position: 'relative' }}>
