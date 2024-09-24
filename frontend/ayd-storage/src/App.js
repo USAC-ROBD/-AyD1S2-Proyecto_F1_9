@@ -5,6 +5,7 @@ import Confirmation from './pages/users/Confirmation';
 import Recovery from './pages/users/Recovery';
 import SetNewPassword from './pages/users/setNewPassword';
 import MainLayout from './components/layout/MainLayout';
+import DeleteAccuntMessage from './pages/users/deleteConfirmation';
 import {routes} from './routes';
 
 import './App.css';
@@ -21,6 +22,7 @@ function App() {
           </Route>
           <Route path="/recovery" element={<Recovery />} />
           <Route path="/setNewPassword" element={<SetNewPassword />} />
+          <Route path="/deleteAccount" element={<DeleteAccuntMessage />} />
         </Routes>
     </BrowserRouter>
   );

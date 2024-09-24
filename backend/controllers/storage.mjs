@@ -8,11 +8,12 @@ const getStorage = async (req, res) => {
         if (!username) return res.status(400).json({ status: 400, message: 'User ID is required to get storage used' })
 
         //retorna una sola fila con la suma de los archivos en MB como used_MB
-        const [rows, fields] = await db.query(`select SUM(archivo.TAMANO_B) AS used_B from usuario 
-                                            INNER JOIN cuenta on usuario.ID_USUARIO = cuenta.ID_USUARIO 
-                                            INNER JOIN carpeta on cuenta.ID_CUENTA = carpeta.ID_CUENTA
-                                            INNER JOIN archivo on carpeta.ID_CARPETA = archivo.ID_CARPETA
-                                            WHERE usuario.USUARIO = ?  GROUP BY usuario.USUARIO`, [username])
+        const [rows, fields] = await db.query(` SELECT SUM(ARCHIVO.TAMANO_B) AS used_B 
+                                                FROM USUARIO 
+                                                    INNER JOIN CUENTA on USUARIO.ID_USUARIO = CUENTA.ID_USUARIO 
+                                                    INNER JOIN CARPETA on CUENTA.ID_CUENTA = CARPETA.ID_CUENTA
+                                                    INNER JOIN ARCHIVO on CARPETA.ID_CARPETA = ARCHIVO.ID_CARPETA
+                                                WHERE USUARIO.USUARIO = ?  GROUP BY USUARIO.USUARIO`, [username])
         
         //if (rows.length === 0) return res.status(404).json({ status: 404, message: 'User not found' })
         //sacamos el espacio usado en bytes y lo pasamos a GB
@@ -22,10 +23,11 @@ const getStorage = async (req, res) => {
         }
         //sacamos el total de almacenamiento en MB
 
-        const [rows2, fields2] = await db.query(`select paquete.CAPACIDAD_GB AS total_GB from usuario 
-                                             inner join cuenta on usuario.ID_USUARIO = cuenta.ID_USUARIO
-                                            inner join paquete on cuenta.ID_PAQUETE = paquete.ID_PAQUETE
-                                            where usuario.USUARIO =?`, [username])
+        const [rows2, fields2] = await db.query(`   SELECT PAQUETE.CAPACIDAD_GB AS total_GB 
+                                                    FROM USUARIO 
+                                                        INNER JOIN CUENTA on USUARIO.ID_USUARIO = CUENTA.ID_USUARIO
+                                                        INNER JOIN PAQUETE on CUENTA.ID_PAQUETE = PAQUETE.ID_PAQUETE
+                                                    WHERE USUARIO.USUARIO =?`, [username])
         
         let total_GB = 0;
         if(rows2[0]) {

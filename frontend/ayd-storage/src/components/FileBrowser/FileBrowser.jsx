@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
@@ -8,39 +8,9 @@ import fileImage from '../../assets/images/documento.png';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
 
-// Datos simulados
-const initialStructure = [
-  {
-    name: 'Música',
-    type: 'folder',
-    children: []
-  },
-  {
-    name: 'Fotos',
-    type: 'folder',
-    children: [
-      { name: 'Lago.jpg', type: 'file' },
-      { name: 'Desierto.jpg', type: 'file' }
-    ]
-  },
-  {
-    name: 'Videos',
-    type: 'folder',
-    children: []
-  },
-  {
-    name: 'Universidad',
-    type: 'folder',
-    children: [
-      { name: 'AYD', type: 'folder', children: [] },
-      { name: 'SOPES', type: 'folder', children: [] },
-      { name: 'BASES2', type: 'folder', children: [] }
-    ]
-  }
-];
-
 const FileBrowser = ({ folder }) => {
-  const [currentFolder, setCurrentFolder] = useState(initialStructure);
+  const [currentFolderId, setCurrentFolderId] = useState(folder);
+  const [currentFolder, setCurrentFolder] = useState([]);
   const [history, setHistory] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [renameFile, setRenameFile] = useState(null);
@@ -49,15 +19,42 @@ const FileBrowser = ({ folder }) => {
   const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
 
-  const enterFolder = (folder) => {
-    setHistory([...history, currentFolder]);
-    setCurrentFolder(folder.children);
+  // Inicializar la carpeta raíz
+  useEffect(() => {
+    setCurrentFolderId(folder);
+  }, [folder]);
+
+  useEffect(() => {
+    fetchChildItems(currentFolderId);
+  }, [currentFolderId]);
+
+  const fetchChildItems = async (idFolder) => {
+    if (!idFolder) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/getChildItems`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idFolder })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          setCurrentFolder(data.children);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  const enterFolder = (newFolder) => {
+    setHistory([...history, currentFolderId]);
+    setCurrentFolderId(newFolder);
   };
 
   const goBack = () => {
     if (history.length > 0) {
       const previousFolder = history.pop();
-      setCurrentFolder(previousFolder);
+      setCurrentFolderId(previousFolder);
       setHistory([...history]);
     }
   };
@@ -133,14 +130,14 @@ const FileBrowser = ({ folder }) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <FormUploadFile parentFolder={folder} onUploadFile={handleUploadFile} />
+            <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <FormCreateFolder parentFolder={folder} onCreateFolder={handleCreateFolder} />
+            <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
           </Grid>
           
 
@@ -150,7 +147,7 @@ const FileBrowser = ({ folder }) => {
             {currentFolder.map((item, index) => (
               <Box
                 key={index}
-                onDoubleClick={() => item.type === 'folder' && enterFolder(item)}
+                onDoubleClick={() => item.type === 'folder' && enterFolder(item.id)}
                 onContextMenu={(e) => handleContextMenu(e, item)}
                 sx={{
                   margin: '10px',
@@ -159,7 +156,7 @@ const FileBrowser = ({ folder }) => {
                 }}
               >
                 <img
-                  src={item.type === 'folder' ? (item.children.length > 0 ? folderImageFull : folderImageEmpty) : fileImage}
+                  src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : fileImage}
                   alt={item.name}
                   style={{ width: '50px', height: '50px' }}
                 />
