@@ -172,7 +172,7 @@ const FileBrowser = ({ folder }) => {
           sx={{
             position: 'absolute',
             top: contextMenu.yPos,
-            left: contextMenu.xPos,
+            left: contextMenu.xPos-240,
             backgroundColor: '#1e293a',
             border: '1px solid #ccc',
             zIndex: 1000,
@@ -184,6 +184,10 @@ const FileBrowser = ({ folder }) => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             overflow: 'visible',
+            '@media (max-width: 600px)': {
+              top: contextMenu.yPos - 56,
+              left: contextMenu.xPos,
+            },
           }}
         >
           <IconButton
