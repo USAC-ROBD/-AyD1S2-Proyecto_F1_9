@@ -119,7 +119,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
                 onClick={handleOpen}
             >
                 <UploadIcon sx={{ color: '#fff', fontSize: '2rem', marginRight: '5px' }} />
-                Subir Archivo
+                Upload File
             </Button>
 
             <Modal
@@ -130,7 +130,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
             >
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, color: 'white' }}>
-                        Subir Archivo
+                        Upload File
                     </Typography>
 
                     <Button
@@ -147,7 +147,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
                             },
                         }}
                     >
-                        Seleccionar Archivo
+                        Choose File
                         <input
                             type="file"
                             hidden
@@ -158,7 +158,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
                         fileName && (
                             <Box>
                                 <Typography variant="body1" sx={{ color: 'white' }}>
-                                    Archivo Seleccionado:
+                                    Choosed File:
                                 </Typography>
                                 <Typography variant="body2" sx={{ mb: 2, color: 'white' }}>
                                     {fileName}
@@ -191,7 +191,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
                                     border: '1px solid #d32f2f',
                                 }}
                             >
-                                Cancelar
+                                Cancel
                             </Button>
                         </Grid2>
 
@@ -209,7 +209,7 @@ export default function FormUploadFile({ parentFolder, onUploadFile }) {
                                     border: '1px solid rgba(27, 255, 0, 0.68)',
                                 }}
                             >
-                                Subir
+                                Upload
                             </Button>
                         </Grid2>
                     </Grid2>

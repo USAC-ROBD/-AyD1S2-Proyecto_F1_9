@@ -122,7 +122,7 @@ const FileBrowser = ({ folder }) => {
         <Grid container spacing={1}>
           <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
             <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-              Explorador de Archivos
+              File Explorer
             </Typography>
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
@@ -215,7 +215,7 @@ const FileBrowser = ({ folder }) => {
               setContextMenu(null);
             }}
           >
-            Renombrar
+            Rename
           </Button>
           <Button
             variant="contained"
@@ -226,7 +226,7 @@ const FileBrowser = ({ folder }) => {
               setContextMenu(null);
             }}
           >
-            Eliminar
+            Delete
           </Button>
         </Box>
       )}
@@ -274,7 +274,7 @@ const FileBrowser = ({ folder }) => {
             required
             fullWidth
             id="rename"
-            label="Nuevo Nombre"
+            label="New name"
             name="rename"
             autoFocus
             value={newName}
@@ -298,7 +298,7 @@ const FileBrowser = ({ folder }) => {
             sx={{ mt: 2, bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' } }}
             onClick={handleRename}
           >
-            Confirmar
+            Confirm
           </Button>
           <Button
             variant="contained"
@@ -309,7 +309,7 @@ const FileBrowser = ({ folder }) => {
               setNewName('');
             }}
           >
-            Cancelar
+            Cancel
           </Button>
         </Box>
       )}
@@ -321,7 +321,7 @@ const FileBrowser = ({ folder }) => {
           sx={{ mt: 2, bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' } }}
           onClick={goBack}
         >
-          Regresar
+          Back
         </Button>
       )}
     </Container>

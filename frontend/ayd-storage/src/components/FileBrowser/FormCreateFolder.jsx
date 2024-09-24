@@ -95,7 +95,7 @@ export default function FormCreateFolder({ parentFolder, onCreateFolder }) {
                 onClick={handleOpen}
             >
                 <CreateNewFolderIcon sx={{ color: '#fff', fontSize: '2rem', marginRight: '5px' }} />
-                Crear Carpeta
+                New Folder
             </Button>
 
             <Modal
@@ -106,7 +106,7 @@ export default function FormCreateFolder({ parentFolder, onCreateFolder }) {
             >
                 <Box sx={style}>
                     <Typography variant="h6" component="h2" sx={{ mb: 2, color: 'white' }}>
-                        Crear Carpeta
+                        New Folder
                     </Typography>
 
                     <TextField
@@ -161,7 +161,7 @@ export default function FormCreateFolder({ parentFolder, onCreateFolder }) {
                                     border: '1px solid #d32f2f',
                                 }}
                             >
-                                Cancelar
+                                Cancel
                             </Button>
                         </Grid2>
 
@@ -179,7 +179,7 @@ export default function FormCreateFolder({ parentFolder, onCreateFolder }) {
                                     border: '1px solid rgba(27, 255, 0, 0.68)',
                                 }}
                             >
-                                Crear
+                                Create
                             </Button>
                         </Grid2>
                     </Grid2>
