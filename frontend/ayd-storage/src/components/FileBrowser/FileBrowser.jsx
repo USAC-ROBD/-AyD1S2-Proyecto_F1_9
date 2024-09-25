@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import {triggerAction} from '../../redux/features/storageBarSlice';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
@@ -9,6 +11,7 @@ import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
 
 const FileBrowser = ({ folder }) => {
+  const dispatch = useDispatch();
   const [currentFolderId, setCurrentFolderId] = useState(folder);
   const [currentFolder, setCurrentFolder] = useState([]);
   const [history, setHistory] = useState([]);
@@ -84,17 +87,19 @@ const FileBrowser = ({ folder }) => {
 
   const handleUploadFile = (file) => {
     const newFile = {
-      id : file.id,
+      id: file.id,
       name: file.name,
       type: 'file'
     };
     // Agregar el nuevo archivo a la carpeta actual
     setCurrentFolder([...currentFolder, newFile]);
+    // actualizar la barra de almacenamiento en el sidebar
+    dispatch(triggerAction());
   }
 
   const handleCreateFolder = (folder) => {
     const newFolder = {
-      id : folder.id,
+      id: folder.id,
       name: folder.name,
       type: 'folder',
       children: []
@@ -117,7 +122,7 @@ const FileBrowser = ({ folder }) => {
         position: 'relative'
       }}
     >
-      
+
       <Box sx={{ flexGrow: 1 }} >
         <Grid container spacing={1}>
           <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
@@ -139,31 +144,33 @@ const FileBrowser = ({ folder }) => {
           }}>
             <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
           </Grid>
-          
+
 
         </Grid>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-            {currentFolder.map((item, index) => (
-              <Box
-                key={index}
-                onDoubleClick={() => item.type === 'folder' && enterFolder(item.id)}
-                onContextMenu={(e) => handleContextMenu(e, item)}
-                sx={{
-                  margin: '10px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                <img
-                  src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : fileImage}
-                  alt={item.name}
-                  style={{ width: '50px', height: '50px' }}
-                />
-                <div>{item.name}</div>
-              </Box>
-            ))}
-          </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', paddingTop: '10px' }}>
+          {currentFolder.map((item, index) => (
+            <Box
+              key={index}
+              onDoubleClick={() => item.type === 'folder' && enterFolder(item.id)}
+              onContextMenu={(e) => handleContextMenu(e, item)}
+              sx={{
+                margin: '10px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                minWidth: '100px',
+                maxWidth: '100px',
+              }}
+            >
+              <img
+                src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : fileImage}
+                alt={item.name}
+                style={{ width: '50px', height: '50px' }}
+              />
+              <div>{item.name.length <12?item.name:item.name.substring(0,9)+'...'}</div>
+            </Box>
+          ))}
+        </Box>
       </Box>
 
       {contextMenu && (
@@ -172,7 +179,7 @@ const FileBrowser = ({ folder }) => {
           sx={{
             position: 'absolute',
             top: contextMenu.yPos,
-            left: contextMenu.xPos,
+            left: contextMenu.xPos - 240,
             backgroundColor: '#1e293a',
             border: '1px solid #ccc',
             zIndex: 1000,
@@ -184,6 +191,10 @@ const FileBrowser = ({ folder }) => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             overflow: 'visible',
+            '@media (max-width: 600px)': {
+              top: contextMenu.yPos - 56,
+              left: contextMenu.xPos,
+            },
           }}
         >
           <IconButton

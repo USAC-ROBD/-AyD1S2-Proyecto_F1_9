@@ -3,7 +3,7 @@ import { Box, LinearProgress, Typography } from '@mui/material';
 
 
 const StorageBar = ({used, total}) => {
-    const storagePercentage = ((used / total) * 100).toFixed(3); ;
+    const storagePercentage = ((Number(used) / total) * 100);
 
     return (
         <Box sx={{
