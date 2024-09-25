@@ -5,6 +5,7 @@ import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
 import HomeIcon from '@mui/icons-material/Home';
 import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
+import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -47,6 +48,16 @@ const Sidebar = () => {
       sidebarProps: {
         icon: <FolderCopyRoundedIcon />,
         displayText: "Archivos",
+      },
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    {
+      level: 0,
+      state: "Profile",
+      path: "/profile",
+      sidebarProps: {
+        icon: <PersonIcon />,
+        displayText: "Profile",
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },

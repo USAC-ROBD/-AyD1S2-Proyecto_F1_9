@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useParams } from 'react-router-dom';
 import FileBrowser from "../../components/FileBrowser/FileBrowser";
+import FloatingActionButtons from "../../components/iconsFav/floatingActionButtons";
 
 const FilesPage = () => {
     const [currentFolder, setCurrentFolder] = useState(null);
@@ -10,11 +11,11 @@ const FilesPage = () => {
         //verificamos si viene el id de la carpeta en la url
         const { id } = params;
         if (id) {
-            console.log("id de la carpeta: ", id);
+            //console.log("id de la carpeta: ", id);
             setCurrentFolder(id);
         }else{ // si no viene el id de la carpeta, obtenemos la carpeta raíz del usuario
             fetchRootFolder();
-            console.log("no viene id de la carpeta");
+            //console.log("no viene id de la carpeta");
         }
       }, []);
 
@@ -44,6 +45,7 @@ const FilesPage = () => {
     return (
         <div>
             <FileBrowser folder={currentFolder} />
+            <FloatingActionButtons />
         </div>
     )
 }

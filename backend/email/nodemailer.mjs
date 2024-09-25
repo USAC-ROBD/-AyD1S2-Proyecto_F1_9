@@ -29,3 +29,14 @@ export const recoveryMail = (email, name, confirmationLink) => {
             <a href="${confirmationLink}">Confirm Account</a>`
     }
 }
+
+export const deleteMail = (email, name, confirmationLink) => {
+    return {
+        from: process.env.EMAIL_ORIGIN,
+        to: email,
+        subject: 'Delete your account of AyDStorage',
+        html: `<p>Hello ${name},</p>
+            <p>Delete your account by clicking the link below:</p>
+            <a href="${confirmationLink}">Confirm Account</a>`
+    }
+}
