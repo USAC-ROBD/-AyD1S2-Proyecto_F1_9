@@ -1,8 +1,10 @@
 import HomePage from "../pages/home/HomePage"
 import HomeIcon from '@mui/icons-material/Home';
 import FilesPage from "../pages/files/FilesPage";
+import AdminPage from "../pages/admin/AdminPage";
 import Profile from "../pages/profile/Profile";
 import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
+import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 
 const appRoutes = [
     {
@@ -12,6 +14,15 @@ const appRoutes = [
         sidebarProps: {
             displayText: "Home",
             icon: <HomeIcon />
+        }
+    },
+    {
+        path: "/admin",
+        element: <AdminPage />,
+        state: "Admin",
+        sidebarProps: {
+            displayText: "Administrador",
+            icon: <AdminPanelSettings />
         }
     },
     {

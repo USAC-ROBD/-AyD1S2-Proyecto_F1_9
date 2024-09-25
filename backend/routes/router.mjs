@@ -47,4 +47,9 @@ router.post('/deleteAccountRequest', deleteAccountRequestUser.deleteAccountReque
 router.post('/registerDeleteAccountRequest', registerDeleteAccountRequestUser.registerDeleteAccountRequest);
 
 
+/******* Admin *******/
+router.get('/getAllAccounts', users.getAllAccounts)
+router.post('/createAccount',users.createAccount)
+router.post('/updateAccounts',users.updateAccounts)
+
 export default router;
