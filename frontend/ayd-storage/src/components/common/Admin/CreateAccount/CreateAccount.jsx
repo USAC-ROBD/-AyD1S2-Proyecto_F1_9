@@ -18,13 +18,12 @@ export default function CreateAccount() {
     const [nationality, setNationality] = useState('')
     const [phoneExtension, setPhoneExtension] = useState('')
     const [phone, setPhone] = useState('')
-    const [role, setRole] = useState(1);
+    const [role, setRole] = useState(2);
     const [roleOptions] = useState([
-        { label: 'Administrador', value: 1 },
         { label: 'Cliente', value: 2 },
         { label: 'Invitado', value: 3 }
     ]);
-    const [storagePackage, setStoragePackage] = useState(4);
+    const [storagePackage, setStoragePackage] = useState(1);
     const [storagePackageOptions] = useState([
         { label: 'Premium (150 GB)', value: 1 },
         { label: 'Standard (50 GB)', value: 2 },
@@ -81,7 +80,7 @@ export default function CreateAccount() {
     const handleRoleChange = (event) => {
         const newRole = event.target.value;
         setRole(newRole);
-        if (newRole === 1) {
+        if (newRole === 3) {
             setStoragePackage(4);
         }
     };
@@ -176,7 +175,7 @@ export default function CreateAccount() {
     }, [])
 
     useEffect(() => {
-        if (role === 1) {
+        if (role === 3) {
             setStoragePackage(4);
         }
     }, [role]);
@@ -457,7 +456,7 @@ export default function CreateAccount() {
                         onChange={handleStoragePackageChange}
                         label="Storage Package"
                         sx={{ color: '#fff' }}
-                        disabled={role === 1}
+                        disabled={role === 3}
                         MenuProps={{
                             PaperProps: {
                                 sx: {
