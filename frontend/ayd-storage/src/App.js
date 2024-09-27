@@ -6,6 +6,7 @@ import Recovery from './pages/users/Recovery';
 import SetNewPassword from './pages/users/setNewPassword';
 import MainLayout from './components/layout/MainLayout';
 import DeleteAccuntMessage from './pages/users/deleteConfirmation';
+import AdminConfirmation from './pages/admin/AdminConfirmation';
 import {routes} from './routes';
 
 import './App.css';
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/confirmation/:id" element={<Confirmation />} />
+          <Route path="/confirmationWarning/:id" element={<AdminConfirmation />} />
           <Route path="/" element={<MainLayout />}>
             {routes}
           </Route>

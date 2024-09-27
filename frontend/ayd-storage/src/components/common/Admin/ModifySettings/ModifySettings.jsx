@@ -36,6 +36,49 @@ export default function ModifySettings() {
         setStoragePackage(account.id_paquete);
     };
 
+    const handleDellClick = async (account) => {
+        // Muestra el diálogo de confirmación
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+    
+        if (result.isConfirmed) {
+            try {
+                // Realiza la petición
+                const response = await fetch(`${process.env.REACT_APP_API_HOST}/warningAccount`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id_cuenta: account.id_cuenta,
+                    }),
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Error al eliminar la cuenta');
+                }
+    
+                // Si la petición fue exitosa, muestra un mensaje de éxito
+                Swal.fire('Eliminada', 'La cuenta ha sido puesta en advertencia de liminación con éxito', 'success');
+    
+                // Actualizar la lista de cuentas después de la eliminación
+                getAllAccounts();
+            } catch (error) {
+                // Muestra un mensaje de error en caso de fallo
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+    };
+    
+
     const handlePackageChange = (e) => {
         setStoragePackage(e.target.value);
     };
@@ -89,7 +132,8 @@ export default function ModifySettings() {
                     <TableHead>
                         <TableRow>
                             <TableCell sx={{ color: '#ccc' }}>Usuario</TableCell>
-                            <TableCell sx={{ color: '#ccc' }}>Acciones</TableCell>
+                            <TableCell sx={{ color: '#ccc' }}>Editar</TableCell>
+                            <TableCell sx={{ color: '#ccc' }}>Eliminar</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -103,6 +147,14 @@ export default function ModifySettings() {
                                         onClick={() => handleEditClick(account)}
                                     >
                                         Editar
+                                    </Button>
+                                </TableCell><TableCell>
+                                    <Button
+                                        variant="contained"
+                                        sx={{ bgcolor: '#1e253a', ':hover': { bgcolor: '#3f4a61' } }}
+                                        onClick={() => handleDellClick(account)}
+                                    >
+                                        Eliminar
                                     </Button>
                                 </TableCell>
                             </TableRow>

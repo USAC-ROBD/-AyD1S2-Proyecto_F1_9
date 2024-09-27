@@ -51,5 +51,7 @@ router.post('/registerDeleteAccountRequest', registerDeleteAccountRequestUser.re
 router.get('/getAllAccounts', users.getAllAccounts)
 router.post('/createAccount',users.createAccount)
 router.post('/updateAccounts',users.updateAccounts)
+router.put('/warningAccount',users.warningAccount)
+router.put('/confirmationWarning',users.confirmationWarning)
 
 export default router;

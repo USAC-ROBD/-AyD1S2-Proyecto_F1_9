@@ -1,5 +1,5 @@
 import db from "../utils/db_connection.mjs"
-import { transporter, getMailOptions } from '../email/nodemailer.mjs'
+import { transporter, getMailOptions, warningMail } from '../email/nodemailer.mjs'
 
 const getCountries = async (req, res) => {
     const [rows, fields] = await db.query('SELECT ID_PAIS AS id, NOMBRE AS name, CODIGO AS code FROM AYD_STORAGE.PAIS')
@@ -268,6 +268,95 @@ const createAccount = async (req, res) => {
     }
 };
 
+const warningAccount = async (req, res) => {
+    const { id_cuenta } = req.body;
+
+    if (!id_cuenta) {
+        return res.status(400).json({ status: 400, message: 'Faltan datos para actualizar el estado de la cuenta' });
+    }
+
+    try {
+        // Verificar si la cuenta existe y obtener detalles como el email asociado
+        const accountQuery = `
+            SELECT ID_CUENTA, EMAIL, NOMBRE
+            FROM CUENTA
+            JOIN USUARIO ON CUENTA.ID_USUARIO = USUARIO.ID_USUARIO
+            WHERE ID_CUENTA = ?
+        `;
+        const [accountRows] = await db.query(accountQuery, [id_cuenta]);
+
+        if (!accountRows.length) {
+            return res.status(400).json({ status: 400, message: 'La cuenta no existe' });
+        }
+
+        const { EMAIL: email, NOMBRE: name } = accountRows[0];
+
+        // Actualizar el estado de ELIMINADO a 2
+        const updateQuery = `
+            UPDATE CUENTA
+            SET ELIMINADO = 2
+            WHERE ID_CUENTA = ?
+        `;
+        await db.query(updateQuery, [id_cuenta]);
+
+        // Generar el enlace de advertencia (puedes cambiar el enlace como necesites)
+        const warningLink = `${process.env.FRONT_URL}/confirmationWarning/${id_cuenta}`;
+
+        // Configurar las opciones del correo de advertencia
+        const mailOptions = warningMail(email, name, warningLink);
+
+        // Enviar el correo de advertencia
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({ status: 500, message: 'Error al enviar el correo de advertencia' });
+            }
+        });
+
+        return res.status(200).json({ status: 200, message: 'Estado de la cuenta actualizado a ELIMINADO = 2 y correo enviado' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: 500, message: 'Error al actualizar el estado de la cuenta' });
+    }
+};
+
+const confirmationWarning = async (req, res) => {
+    const { id_cuenta } = req.body;
+
+    if (!id_cuenta) {
+        return res.status(400).json({ status: 400, message: 'Faltan datos para confirmar la cuenta' });
+    }
+
+    try {
+        // Buscar la cuenta en la base de datos con el estado ELIMINADO = 2
+        const accountQuery = `
+            SELECT ID_CUENTA, NOMBRE
+            FROM CUENTA
+            JOIN USUARIO ON CUENTA.ID_USUARIO = USUARIO.ID_USUARIO
+            WHERE ID_CUENTA = ? AND ELIMINADO = 2
+        `;
+        const [accountRows] = await db.query(accountQuery, [id_cuenta]);
+
+        if (!accountRows.length) {
+            return res.status(400).json({ status: 400, message: 'No se encontró la cuenta o no está en estado ELIMINADO = 2' });
+        }
+
+        const { NOMBRE: name } = accountRows[0];
+
+        // Actualizar el estado de ELIMINADO a 0
+        const updateQuery = `
+            UPDATE CUENTA
+            SET ELIMINADO = 0
+            WHERE ID_CUENTA = ?
+        `;
+        await db.query(updateQuery, [id_cuenta]);
+
+        return res.status(200).json({ status: 200, icon: 'success', message: `¡Cuenta confirmada! Bienvenido de nuevo, ${name}.` });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: 500, message: 'Error al confirmar la cuenta' });
+    }
+};
 
 export const users = {
     getCountries,
@@ -278,4 +367,6 @@ export const users = {
     updateAccounts,
     createAccount,
     updateProfile,
+    warningAccount,
+    confirmationWarning,
 }
