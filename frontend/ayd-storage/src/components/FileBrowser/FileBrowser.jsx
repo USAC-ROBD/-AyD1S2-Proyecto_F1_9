@@ -7,6 +7,14 @@ import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
 import folderImageFull from '../../assets/images/carpeta.png';
 import fileImage from '../../assets/images/documento.png';
+import acc from '../../assets/images/acc_icon.svg';
+import doc from '../../assets/images/doc_icon.svg';
+import img from '../../assets/images/img_icon.svg';
+import pdf from '../../assets/images/pdf_icon.svg';
+import ppt from '../../assets/images/ppt_icon.svg';
+import txt from '../../assets/images/txt_icon.svg';
+import vau from '../../assets/images/vau_icon.svg';
+import xls from '../../assets/images/xls_icon.svg';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
 
@@ -108,6 +116,38 @@ const FileBrowser = ({ folder }) => {
     setCurrentFolder([...currentFolder, newFolder]);
   }
 
+  const getFileIcon = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase(); // Obtiene la extensión y la convierte a minúsculas
+    switch (extension) {
+      case 'pdf':
+        return pdf; // Cambia la ruta del ícono según el tipo de archivo
+      case 'doc':
+      case 'docx':
+        return doc;
+      case 'xls':
+      case 'xlsx':
+        return xls;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return img;
+      case 'ppt':
+      case 'pptx':
+        return ppt
+      case 'accdb':
+        return acc;
+      case 'mkv':
+      case 'midi':
+      case 'mp3':
+      case 'mp4':
+        return vau;
+      case 'txt':
+        return txt;
+      default:
+        return fileImage;
+    }
+  }
+
   return (
     <Container
       component="main"
@@ -163,11 +203,11 @@ const FileBrowser = ({ folder }) => {
               }}
             >
               <img
-                src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : fileImage}
+                src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : getFileIcon(item.name)}
                 alt={item.name}
                 style={{ width: '50px', height: '50px' }}
               />
-              <div>{item.name.length <12?item.name:item.name.substring(0,9)+'...'}</div>
+              <div>{item.name.length <= 30 ? item.name.match(new RegExp(`.{1,10}`, 'g')).join('\n') : item.name.substring(0, 25).match(new RegExp(`.{1,10}`, 'g')).join('\n') + '...'}</div>
             </Box>
           ))}
         </Box>

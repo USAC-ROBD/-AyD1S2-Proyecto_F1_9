@@ -39,11 +39,13 @@ const getChildItems = async (req, res) => {
                                                         ) AS CHILDREN
                                                 ) AS CHILDREN
                                                 FROM CARPETA
-                                                WHERE CARPETA.ID_CARPETA_PADRE = ?`, [idFolder])
+                                                WHERE CARPETA.ID_CARPETA_PADRE = ?
+                                                ORDER BY CARPETA.NOMBRE ASC`, [idFolder])
 
         const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
                                                     FROM ARCHIVO
-                                                    WHERE ARCHIVO.ID_CARPETA = ?`, [idFolder])
+                                                    WHERE ARCHIVO.ID_CARPETA = ?
+                                                    ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder])
 
         const folders = rows.map(folder => {
             return {
@@ -138,8 +140,9 @@ const createFolder = async (req, res) => {
     }
 }
 
-export const files = {  getRootFolder,
-                        getChildItems,
-                        uploadFile,
-                        createFolder,
- }
+export const files = {
+    getRootFolder,
+    getChildItems,
+    uploadFile,
+    createFolder,
+}
