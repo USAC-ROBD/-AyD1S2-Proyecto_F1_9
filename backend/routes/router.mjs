@@ -38,6 +38,7 @@ router.post('/getChildItems', files.getChildItems);
 router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
 router.put('/rename', files.rename);
+router.put('/download', files.download);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);

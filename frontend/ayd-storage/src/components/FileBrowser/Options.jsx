@@ -1,8 +1,30 @@
 import { useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
+import Swal from 'sweetalert2';
 
 export default function Options({ type, contextMenu, visible, setVisible, activeRename, activeDelete }) {
     const contextMenuRef = useRef(null);
+
+    const handleDownload = async () => {
+        const response = await fetch(`${process.env.REACT_APP_API_HOST}/download`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ idFile: contextMenu.item.id, name: contextMenu.item.name })
+        })
+
+        const data = await response.json()
+
+        Swal.fire({
+            icon: data.icon,
+            title: data.message,
+            showConfirmButton: false,
+            timer: data.icon === 'success' ? 800 : 2000
+        });
+
+        setVisible(false)
+    }
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -43,42 +65,59 @@ export default function Options({ type, contextMenu, visible, setVisible, active
                 },
             }}
         >
+            <Button
+                variant="text"
+                color="inherit"
+                sx={{
+                    p: 1,
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    color: '#ffffff', // Texto claro para el fondo oscuro
+                    '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                    },
+                }}
+                onClick={activeRename}
+            >
+                Rename
+            </Button>
+            
+            {contextMenu.item.type === 'file' && <Button
+                variant="text"
+                color="inherit"
+                sx={{
+                    p: 1,
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    color: '#ffffff', // Texto claro para el fondo oscuro
+                    '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                    },
+                }}
+                onClick={handleDownload}
+            >
+                Download
+            </Button>}
 
-        <Button
-            variant="text"
-            color="inherit"
-            sx={{
-                p: 1,
-                width: '100%',
-                justifyContent: 'flex-start',
-                textTransform: 'none',
-                color: '#ffffff', // Texto claro para el fondo oscuro
-                '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
-                },
-            }}
-            onClick={activeRename}
-        >
-            Rename
-        </Button>
-
-        <Button
-            variant="text"
-            color="inherit"
-            sx={{
-                p: 1,
-                width: '100%',
-                justifyContent: 'flex-start',
-                textTransform: 'none',
-                color: '#ff6b6b', // Texto rojo claro para Delete
-                '&:hover': {
-                    backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
-                },
-            }}
-            onClick={activeDelete}
-        >
-            Delete
-        </Button>
+            <Button
+                variant="text"
+                color="inherit"
+                sx={{
+                    p: 1,
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    textTransform: 'none',
+                    color: '#ff6b6b', // Texto rojo claro para Delete
+                    '&:hover': {
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
+                    },
+                }}
+                onClick={activeDelete}
+            >
+                Delete
+            </Button>
         </Box>
     );
 }

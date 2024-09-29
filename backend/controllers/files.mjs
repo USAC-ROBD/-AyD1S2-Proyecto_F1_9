@@ -1,5 +1,8 @@
 import db from "../utils/db_connection.mjs"
-import { uploadFileS3 } from "../aws/s3.mjs";
+import { uploadFileS3, downloadFileS3 } from "../aws/s3.mjs";
+import os from 'os';
+import path from 'path';
+import fs from 'fs/promises';
 
 const getRootFolder = async (req, res) => {
     try {
@@ -158,10 +161,29 @@ const rename = async (req, res) => {
     }
 }
 
+const download = async (req, res) => {
+    try {
+        const { idFile, name } = req.body
+        const [rows] = await db.query('SELECT KEY_S3 FROM ARCHIVO WHERE ID_ARCHIVO = ?', [idFile])
+        const [file] = rows
+
+        const res_ = await downloadFileS3(file.KEY_S3.substring(1, file.KEY_S3.length))
+        const buffer = Buffer.from(res_)
+        const filePath = path.join(path.join(os.homedir(), 'Downloads'), name)
+        await fs.writeFile(filePath, buffer)
+
+        return res.status(200).json({ status: 200, icon: 'success', message: 'Downloaded' })
+    } catch(error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 export const files = {
     getRootFolder,
     getChildItems,
     uploadFile,
     createFolder,
     rename,
+    download,
 }
