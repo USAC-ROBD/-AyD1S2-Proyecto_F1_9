@@ -112,6 +112,10 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     fetchDeleteFile(item);
   };
 
+  const handleRestore = (item) => {
+    fetchRestoreFile(item);
+  };
+
   const handleUploadFile = (file) => {
     const newFile = {
       id: file.id,
@@ -137,6 +141,25 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
 
   const fetchDeleteFile = async (item) => {
     fetch(`${process.env.REACT_APP_API_HOST}/deleteFile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idFile: item.id, type: item.type })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('File moved to recycling bin');
+          const filtered = currentFolder.filter((i) => i !== item);
+          setCurrentFolder(filtered);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  const fetchRestoreFile = async (item) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/restoreFile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -300,6 +323,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
             color="secondary"
             sx={{ mb: 1, bgcolor: '#1ae209', ':hover': { bgcolor: '#63f966' } }}
             onClick={() => {
+              handleRestore(contextMenu.item);
               setContextMenu(null);
             }}
           >

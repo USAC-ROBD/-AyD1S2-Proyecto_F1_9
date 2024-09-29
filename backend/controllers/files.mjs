@@ -232,11 +232,41 @@ const deleteFile = async (req, res) => {
     }
 }
 
+const restoreFile = async (req, res) => {
+    try {
+        //sacamos los valores del json
+        const { idFile, type } = req.body
+
+        if (!idFile || !type) return res.status(400).json({ status: 400, message: 'Data uncomplete to delete the file' })
+
+        //cambiamos el estado del archivo/ carpeta eliminado
+
+        if (type === 'file') {
+            const [rows, fields] = await db.query(`UPDATE archivo SET ELIMINADO = 0 WHERE ID_ARCHIVO = ?`, [idFile])
+
+            if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'File not found' })
+
+            return res.status(200).json({ status: 200, message: 'File restored' })
+        } else if (type === 'folder') {
+            const [rows, fields] = await db.query(`UPDATE carpeta SET ELIMINADO = 0 WHERE ID_CARPETA = ?`, [idFile])
+
+            if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'Folder not found' })
+
+            return res.status(200).json({ status: 200, message: 'Folder restored' })
+        }
+    }
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, message: 'Internal server error' })
+    }
+}
+
 export const files = {
     getRootFolder,
     getChildItems,
     uploadFile,
     createFolder,
     deleteFile,
-    getDeletedItems
+    getDeletedItems,
+    restoreFile
 }
