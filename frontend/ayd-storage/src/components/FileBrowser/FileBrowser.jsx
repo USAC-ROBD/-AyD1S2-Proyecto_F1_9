@@ -86,8 +86,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
   };
 
   const handleDelete = (item) => {
-    const filtered = currentFolder.filter((i) => i !== item);
-    setCurrentFolder(filtered);
+    fetchDeleteFile(item);
   };
 
   const handleUploadFile = (file) => {
@@ -111,6 +110,25 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     };
     // Agregar la nueva carpeta a la carpeta actual
     setCurrentFolder([...currentFolder, newFolder]);
+  }
+
+  const fetchDeleteFile = async (item) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/deleteFile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idFile: item.id, type: item.type })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('File moved to recycling bin');
+          const filtered = currentFolder.filter((i) => i !== item);
+          setCurrentFolder(filtered);
+        }
+      })
+      .catch(error => console.error('Error:', error));
   }
 
   return (
