@@ -10,7 +10,7 @@ import fileImage from '../../assets/images/documento.png';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
 
-const FileBrowser = ({ folder }) => {
+const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
   const [currentFolderId, setCurrentFolderId] = useState(folder);
   const [currentFolder, setCurrentFolder] = useState([]);
@@ -24,11 +24,15 @@ const FileBrowser = ({ folder }) => {
 
   // Inicializar la carpeta raíz
   useEffect(() => {
-    setCurrentFolderId(folder);
-  }, [folder]);
+    if (!esPapelera){
+      setCurrentFolderId(folder);
+    }
+  }, [esPapelera,folder]);
 
   useEffect(() => {
-    fetchChildItems(currentFolderId);
+    if(!esPapelera){
+      fetchChildItems(currentFolderId);
+    }
   }, [currentFolderId]);
 
   const fetchChildItems = async (idFolder) => {
@@ -50,6 +54,7 @@ const FileBrowser = ({ folder }) => {
   };
 
   const enterFolder = (newFolder) => {
+    if (esPapelera) return; //si esta en la papelera no se pueden abrir carpetas
     setHistory([...history, currentFolderId]);
     setCurrentFolderId(newFolder);
   };
@@ -127,7 +132,7 @@ const FileBrowser = ({ folder }) => {
         <Grid container spacing={1}>
           <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
             <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-              File Explorer
+              {esPapelera ? 'Recycling Bin' : 'Files'}
             </Typography>
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
@@ -135,14 +140,19 @@ const FileBrowser = ({ folder }) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
+            {!esPapelera && (
+              <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
+            )}
+            
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
           }}>
+            {!esPapelera && (
             <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
+            )}
           </Grid>
 
 
@@ -216,7 +226,8 @@ const FileBrowser = ({ folder }) => {
           >
             <CloseIcon />
           </IconButton>
-          <Button
+          {!esPapelera && (
+            <Button
             variant="contained"
             color="primary"
             sx={{ mb: 1, bgcolor: '#', ':hover': { bgcolor: '#3f4a61' } }}
@@ -228,7 +239,9 @@ const FileBrowser = ({ folder }) => {
           >
             Rename
           </Button>
-          <Button
+          )}
+          {!esPapelera && (
+            <Button
             variant="contained"
             color="secondary"
             sx={{ mb: 1, bgcolor: '#d32f2f', ':hover': { bgcolor: '#f44336' } }}
@@ -239,6 +252,20 @@ const FileBrowser = ({ folder }) => {
           >
             Delete
           </Button>
+          )}
+          {esPapelera && (
+            <Button
+            variant="contained"
+            color="secondary"
+            sx={{ mb: 1, bgcolor: '#1ae209', ':hover': { bgcolor: '#63f966' } }}
+            onClick={() => {
+              setContextMenu(null);
+            }}
+          >
+            Restore
+          </Button>
+          )}
+          
         </Box>
       )}
 

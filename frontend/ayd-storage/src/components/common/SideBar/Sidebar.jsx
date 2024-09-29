@@ -10,6 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
 import { resetAction } from "../../../redux/features/storageBarSlice";
@@ -63,6 +64,16 @@ const Sidebar = () => {
       sidebarProps: {
         icon: <PersonIcon />,
         displayText: "Profile",
+      },
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    {
+      level: 0,
+      state: "Recycling",
+      path: "/recycling",
+      sidebarProps: {
+        icon: <DeleteOutlineIcon />,
+        displayText: "Recycling Bin",
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },

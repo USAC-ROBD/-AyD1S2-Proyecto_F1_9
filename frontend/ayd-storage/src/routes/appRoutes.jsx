@@ -3,8 +3,10 @@ import HomeIcon from '@mui/icons-material/Home';
 import FilesPage from "../pages/files/FilesPage";
 import AdminPage from "../pages/admin/AdminPage";
 import Profile from "../pages/profile/Profile";
+import PapeleraPage from "../pages/papelera/PapeleraPage";
 import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 const appRoutes = [
     {
@@ -51,7 +53,15 @@ const appRoutes = [
             displayText: "Archivos",
             icon: <FolderCopyRoundedIcon />
         }
-    },
+    },{
+        path: "/recycling",
+        element: <PapeleraPage />,
+        state: "Recycling",
+        sidebarProps: {
+            displayText: "Recycling Bioin",
+            icon: <DeleteOutlineIcon />
+        }
+    }
 ]
 
 export default appRoutes;
