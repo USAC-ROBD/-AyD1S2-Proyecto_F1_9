@@ -7,8 +7,18 @@ import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
 import folderImageFull from '../../assets/images/carpeta.png';
 import fileImage from '../../assets/images/documento.png';
+import acc from '../../assets/images/acc_icon.svg';
+import doc from '../../assets/images/doc_icon.svg';
+import img from '../../assets/images/img_icon.svg';
+import pdf from '../../assets/images/pdf_icon.svg';
+import ppt from '../../assets/images/ppt_icon.svg';
+import txt from '../../assets/images/txt_icon.svg';
+import vau from '../../assets/images/vau_icon.svg';
+import xls from '../../assets/images/xls_icon.svg';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
+import ContextMenu from './Options';
+import Swal from 'sweetalert2';
 
 const FileBrowser = ({ folder }) => {
   const dispatch = useDispatch();
@@ -18,8 +28,9 @@ const FileBrowser = ({ folder }) => {
   const [contextMenu, setContextMenu] = useState(null);
   const [renameFile, setRenameFile] = useState(null);
   const [newName, setNewName] = useState('');
+  const [visible, setVisible] = useState(false);
 
-  const contextMenuRef = useRef(null);
+  // const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
 
   // Inicializar la carpeta raíz
@@ -69,14 +80,37 @@ const FileBrowser = ({ folder }) => {
       xPos: e.pageX,
       yPos: e.pageY
     });
+    setVisible(true);
   };
 
-  const handleRename = () => {
+  const handleRename = async () => {
     if (renameFile && newName.trim() !== '') {
-      renameFile.name = newName;
-      setCurrentFolder([...currentFolder]);
-      setRenameFile(null);
-      setNewName('');
+      const response = await fetch(`${process.env.REACT_APP_API_HOST}/rename`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ idRename: contextMenu.item.id, idPadre: currentFolderId, newName, type: contextMenu.item.type })
+      })
+
+      const data = await response.json()
+
+      if(response.ok) {
+        if(data.icon === 'success') {
+          renameFile.name = newName;
+          setCurrentFolder([...currentFolder]);
+          setRenameFile(null);
+          setNewName('');
+          setContextMenu(null);
+          return
+        }
+      }
+      Swal.fire({
+        icon: data.icon,
+        title: data.message,
+        showConfirmButton: false,
+        timer: 2000
+      });
     }
   };
 
@@ -106,6 +140,50 @@ const FileBrowser = ({ folder }) => {
     };
     // Agregar la nueva carpeta a la carpeta actual
     setCurrentFolder([...currentFolder, newFolder]);
+  }
+
+  const activeRename = () => {
+    setNewName(contextMenu.item.name)
+    setRenameFile(contextMenu.item)
+    setVisible(false)
+  }
+
+  const activeDelete = () => {
+    handleDelete(contextMenu.item)
+    setContextMenu(null)
+    setVisible(false)
+  }
+
+  const getFileIcon = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase(); // Obtiene la extensión y la convierte a minúsculas
+    switch (extension) {
+      case 'pdf':
+        return pdf; // Cambia la ruta del ícono según el tipo de archivo
+      case 'doc':
+      case 'docx':
+        return doc;
+      case 'xls':
+      case 'xlsx':
+        return xls;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return img;
+      case 'ppt':
+      case 'pptx':
+        return ppt
+      case 'accdb':
+        return acc;
+      case 'mkv':
+      case 'midi':
+      case 'mp3':
+      case 'mp4':
+        return vau;
+      case 'txt':
+        return txt;
+      default:
+        return fileImage;
+    }
   }
 
   return (
@@ -163,84 +241,23 @@ const FileBrowser = ({ folder }) => {
               }}
             >
               <img
-                src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : fileImage}
+                src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : getFileIcon(item.name)}
                 alt={item.name}
                 style={{ width: '50px', height: '50px' }}
               />
-              <div>{item.name.length <12?item.name:item.name.substring(0,9)+'...'}</div>
+              <div>{item.name.length <= 30 ? item.name.match(new RegExp(`.{1,10}`, 'g')).join('\n') : item.name.match(new RegExp(`.{1,10}`, 'g')).join('\n').substring(0, 25) + '...'}</div>
             </Box>
           ))}
         </Box>
       </Box>
 
-      {contextMenu && (
-        <Box
-          ref={contextMenuRef}
-          sx={{
-            position: 'absolute',
-            top: contextMenu.yPos,
-            left: contextMenu.xPos - 240,
-            backgroundColor: '#1e293a',
-            border: '1px solid #ccc',
-            zIndex: 1000,
-            p: 1,
-            boxShadow: 3,
-            borderRadius: 1,
-            minWidth: '150px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            overflow: 'visible',
-            '@media (max-width: 600px)': {
-              top: contextMenu.yPos - 56,
-              left: contextMenu.xPos,
-            },
-          }}
-        >
-          <IconButton
-            onClick={() => setContextMenu(null)}
-            sx={{
-              position: 'absolute',
-              top: '-22px',
-              right: '-20px',
-              color: '#fff',
-              border: '2px solid #ccc',
-              backgroundColor: '#1e253a',
-              width: '35px',
-              height: '35px',
-              zIndex: 1001,
-              '&:hover': {
-                backgroundColor: '#3f4a61',
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mb: 1, bgcolor: '#', ':hover': { bgcolor: '#3f4a61' } }}
-            onClick={() => {
-              setNewName(contextMenu.item.name);
-              setRenameFile(contextMenu.item);
-              setContextMenu(null);
-            }}
-          >
-            Rename
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{ mb: 1, bgcolor: '#d32f2f', ':hover': { bgcolor: '#f44336' } }}
-            onClick={() => {
-              handleDelete(contextMenu.item);
-              setContextMenu(null);
-            }}
-          >
-            Delete
-          </Button>
-        </Box>
-      )}
+      <ContextMenu
+        contextMenu={contextMenu}
+        visible={visible}
+        setVisible={setVisible}
+        activeRename={activeRename}
+        activeDelete={activeDelete}
+      />
 
       {renameFile && (
         <Box
@@ -318,6 +335,7 @@ const FileBrowser = ({ folder }) => {
             onClick={() => {
               setRenameFile(null);
               setNewName('');
+              setContextMenu(null);
             }}
           >
             Cancel
