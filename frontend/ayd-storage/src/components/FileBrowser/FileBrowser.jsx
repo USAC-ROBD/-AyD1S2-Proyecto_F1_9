@@ -33,6 +33,10 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     if(!esPapelera){
       fetchChildItems(currentFolderId);
     }
+    if(esPapelera){
+      const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+      fetchDeletedItems(usuario);
+    }
   }, [currentFolderId]);
 
   const fetchChildItems = async (idFolder) => {
@@ -43,6 +47,25 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ idFolder })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          setCurrentFolder(data.children);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  const fetchDeletedItems = async (usuario) => {
+    console.log(usuario);
+    if (!usuario) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/getDeletedFiles`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idUsuario : usuario.ID_USUARIO })
     })
       .then(response => response.json())
       .then(data => {
