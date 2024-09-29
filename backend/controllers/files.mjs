@@ -1,5 +1,7 @@
 import db from "../utils/db_connection.mjs"
 import { uploadFileS3 } from "../aws/s3.mjs";
+import { deleteObjectS3 } from "../aws/s3.mjs";
+
 
 const getRootFolder = async (req, res) => {
     try {
@@ -162,7 +164,7 @@ const uploadFile = async (req, res) => {
             return res.status(500).json({ status: 500, message: "Error al subir el archivo" });
         }
 
-        const key_s3 = `/Archivos/${nombreImagen}`;
+        const key_s3 = `Archivos/${nombreImagen}`;
 
         //insertamos el archivo
         const [rows, fields] = await db.query(`INSERT INTO ARCHIVO (ID_CARPETA, NOMBRE, TAMANO_B, KEY_S3, CREA, MODIFICA, FECHA_CREACION) 
@@ -261,6 +263,142 @@ const restoreFile = async (req, res) => {
     }
 }
 
+const emptyTrash = async (req, res) => {
+    try {
+        //sacamos los valores del json
+        const { idUser } = req.body
+
+        if (!idUser) return res.status(400).json({ status: 400, message: 'Data uncomplete to delete the file' })
+
+        const [rows, fields] = await db.query(`SELECT CUENTA.ID_CUENTA FROM CUENTA where CUENTA.ID_USUARIO = ?`, [idUser])
+
+        if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Account not found' })
+
+        const idCuenta = rows[0].ID_CUENTA;
+
+        //obtenemos los archivos y carpetas hijos de la papelera
+        const [rows2, fields2] = await db.query(` SELECT CARPETA.ID_CARPETA,(  SELECT SUM(CANT)
+                FROM (
+                    SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                    UNION 
+                    SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                    ) AS CHILDREN
+            ) AS CHILDREN
+            FROM CARPETA WHERE ELIMINADO = 1 and CARPETA.ID_CUENTA = ?`, [idCuenta])
+
+        const [rows3, fields3] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.KEY_S3
+                FROM ARCHIVO INNER JOIN CARPETA on ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                WHERE CARPETA.ID_CUENTA = ? and ARCHIVO.ELIMINADO = 1`, [idCuenta])
+
+        const folders = rows2.map(folder => {
+            return {
+                id: folder.ID_CARPETA,
+                type: 'folder',
+                children: folder.CHILDREN
+            }
+        });
+
+        const files = rows3.map(file => {
+            return {
+                id: file.ID_ARCHIVO,
+                name: file.NOMBRE,
+                type: 'file',
+                size: file.TAMANO_B,
+                key: file.KEY_S3,
+                created: file.CREA,
+                modified: file.MODIFICA,
+                createdDate: file.CREACION,
+                modifiedDate: file.MODIFICACION,
+            }
+        });
+
+        const listItems = [...folders, ...files];
+
+        //eliminamos los archivos y carpetas hijos de la papelera
+        for (let i = 0; i < listItems.length; i++) {
+            if (listItems[i].type === 'folder') {
+                await deleteFolder(listItems[i]);
+                //eliminamos la carpeta de la base de datos
+                await db.query(`DELETE FROM CARPETA WHERE ID_CARPETA = ?`, [listItems[i].id])
+            } else if (listItems[i].type === 'file') {
+                await deleteObjectS3(listItems[i].key);
+                //eliminamos el archivo de la base de datos
+                await db.query(`DELETE FROM ARCHIVO WHERE ID_ARCHIVO = ?`, [listItems[i].id])
+            }
+        }
+        
+        return res.status(200).json({ status: 200, message: 'Trash emptied' })
+    }
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, message: 'Internal server error' })
+    }
+}
+
+const deleteFolder = async (folder) => { //funcion recursiva para eliminar carpetas
+    try {
+        const items = await getFiles(folder.id);
+        console.log(items)
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type === 'folder') {
+                await deleteFolder(items[i]);
+                //eliminamos la carpeta de la base de datos
+                await db.query(`DELETE FROM CARPETA WHERE ID_CARPETA = ?`, [items[i].id])
+            } else if (items[i].type === 'file') {
+                await deleteObjectS3(items[i].key);
+                //eliminamos el archivo de la base de datos
+                await db.query(`DELETE FROM ARCHIVO WHERE ID_ARCHIVO = ?`, [items[i].id])
+            }
+        }
+
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+const getFiles = async (idFolder) => { //funcion para obtener los archivos y carpetas hijos de una carpeta para eliminarlos
+    try {
+
+        //retornamos los archivos y carpetas hijos de la carpeta
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA
+                                                ,(  SELECT SUM(CANT)
+                                                    FROM (
+                                                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                                                        UNION 
+                                                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                                                        ) AS CHILDREN
+                                                ) AS CHILDREN
+                                                FROM CARPETA
+                                                WHERE CARPETA.ID_CARPETA_PADRE = ?`, [idFolder])
+
+        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.KEY_S3
+                                                    FROM ARCHIVO
+                                                    WHERE ARCHIVO.ID_CARPETA = ?`, [idFolder])
+
+        const folders = rows.map(folder => {
+            return {
+                id: folder.ID_CARPETA,
+                type: 'folder',
+                children: folder.CHILDREN
+            }
+        });
+
+        const files = rows2.map(file => {
+            return {
+                id: file.ID_ARCHIVO,
+                type: 'file',
+                key: file.KEY_S3
+            }
+        });
+
+        return [...folders, ...files]
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
 export const files = {
     getRootFolder,
     getChildItems,
@@ -268,5 +406,6 @@ export const files = {
     createFolder,
     deleteFile,
     getDeletedItems,
-    restoreFile
+    restoreFile,
+    emptyTrash
 }

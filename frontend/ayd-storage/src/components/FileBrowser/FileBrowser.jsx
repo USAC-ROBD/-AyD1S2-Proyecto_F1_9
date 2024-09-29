@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import {triggerAction} from '../../redux/features/storageBarSlice';
+import { triggerAction } from '../../redux/features/storageBarSlice';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
@@ -9,6 +9,8 @@ import folderImageFull from '../../assets/images/carpeta.png';
 import fileImage from '../../assets/images/documento.png';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import Swal from 'sweetalert2';
 
 const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
@@ -24,16 +26,16 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
 
   // Inicializar la carpeta raíz
   useEffect(() => {
-    if (!esPapelera){
+    if (!esPapelera) {
       setCurrentFolderId(folder);
     }
-  }, [esPapelera,folder]);
+  }, [esPapelera, folder]);
 
   useEffect(() => {
-    if(!esPapelera){
+    if (!esPapelera) {
       fetchChildItems(currentFolderId);
     }
-    if(esPapelera){
+    if (esPapelera) {
       const usuario = JSON.parse(localStorage.getItem('USUARIO'));
       fetchDeletedItems(usuario);
     }
@@ -65,7 +67,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ idUsuario : usuario.ID_USUARIO })
+      body: JSON.stringify({ idUsuario: usuario.ID_USUARIO })
     })
       .then(response => response.json())
       .then(data => {
@@ -177,6 +179,57 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
       .catch(error => console.error('Error:', error));
   }
 
+  const handleEmptyTrash = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to undo this action!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, empty the trash',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // User pressed confirm
+        fetchEmptyTrash();
+        Swal.fire(
+          'Emptied!',
+          'The trash has been emptied.',
+          'success'
+        );
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // User pressed cancel
+        Swal.fire(
+          'Cancelled',
+          'Your trash is still intact :)',
+          'error'
+        );
+        // Additional logic when canceled
+      }
+    });
+  };
+
+  const fetchEmptyTrash = async () => {
+    const idUser = JSON.parse(localStorage.getItem('USUARIO')).ID_USUARIO;
+    if (!idUser) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/emptyTrash`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idUser })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('Trash emptied');
+          setCurrentFolder([]);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
   return (
     <Container
       component="main"
@@ -207,15 +260,39 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
             {!esPapelera && (
               <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
             )}
-            
+
           </Grid>
+          {!esPapelera && (
+            <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+
+              <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
+
+            </Grid>
+          )}
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            {!esPapelera && (
-            <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
+            {esPapelera && (
+              <Button
+                sx={{
+                  color: '#fff',
+                  transition: 'box-shadow 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 0px 12px rgba(255, 255, 255, 0.68)',
+                  },
+                  border: '1px solid #fff',
+                }}
+                onClick={handleEmptyTrash}
+              >
+                <DeleteOutlineIcon sx={{ color: '#fff', fontSize: '2rem', marginRight: '5px' }} />
+                Empty Trash
+              </Button>
             )}
           </Grid>
 
@@ -241,7 +318,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
                 alt={item.name}
                 style={{ width: '50px', height: '50px' }}
               />
-              <div>{item.name.length <12?item.name:item.name.substring(0,9)+'...'}</div>
+              <div>{item.name.length < 12 ? item.name : item.name.substring(0, 9) + '...'}</div>
             </Box>
           ))}
         </Box>
@@ -292,45 +369,45 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
           </IconButton>
           {!esPapelera && (
             <Button
-            variant="contained"
-            color="primary"
-            sx={{ mb: 1, bgcolor: '#', ':hover': { bgcolor: '#3f4a61' } }}
-            onClick={() => {
-              setNewName(contextMenu.item.name);
-              setRenameFile(contextMenu.item);
-              setContextMenu(null);
-            }}
-          >
-            Rename
-          </Button>
+              variant="contained"
+              color="primary"
+              sx={{ mb: 1, bgcolor: '#', ':hover': { bgcolor: '#3f4a61' } }}
+              onClick={() => {
+                setNewName(contextMenu.item.name);
+                setRenameFile(contextMenu.item);
+                setContextMenu(null);
+              }}
+            >
+              Rename
+            </Button>
           )}
           {!esPapelera && (
             <Button
-            variant="contained"
-            color="secondary"
-            sx={{ mb: 1, bgcolor: '#d32f2f', ':hover': { bgcolor: '#f44336' } }}
-            onClick={() => {
-              handleDelete(contextMenu.item);
-              setContextMenu(null);
-            }}
-          >
-            Delete
-          </Button>
+              variant="contained"
+              color="secondary"
+              sx={{ mb: 1, bgcolor: '#d32f2f', ':hover': { bgcolor: '#f44336' } }}
+              onClick={() => {
+                handleDelete(contextMenu.item);
+                setContextMenu(null);
+              }}
+            >
+              Delete
+            </Button>
           )}
           {esPapelera && (
             <Button
-            variant="contained"
-            color="secondary"
-            sx={{ mb: 1, bgcolor: '#1ae209', ':hover': { bgcolor: '#63f966' } }}
-            onClick={() => {
-              handleRestore(contextMenu.item);
-              setContextMenu(null);
-            }}
-          >
-            Restore
-          </Button>
+              variant="contained"
+              color="secondary"
+              sx={{ mb: 1, bgcolor: '#1ae209', ':hover': { bgcolor: '#63f966' } }}
+              onClick={() => {
+                handleRestore(contextMenu.item);
+                setContextMenu(null);
+              }}
+            >
+              Restore
+            </Button>
           )}
-          
+
         </Box>
       )}
 

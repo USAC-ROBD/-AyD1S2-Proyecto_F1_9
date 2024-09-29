@@ -30,8 +30,6 @@ const uploadFileS3 = async (buff, path, type) => {
   };
 
   const deleteObjectS3 = async (path) => {
-    let parts = path.split('/');
-    parts = parts[parts.length - 2] + "/" + parts[parts.length - 1];
   
     const client = new S3Client({
       region: configurations.region,
@@ -42,7 +40,7 @@ const uploadFileS3 = async (buff, path, type) => {
     });
     const command = new DeleteObjectCommand({
       Bucket: configurations.bucket,
-      Key: parts,
+      Key: path,
     });
   
     try {
