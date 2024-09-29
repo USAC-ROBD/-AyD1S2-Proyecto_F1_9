@@ -44,7 +44,7 @@ const FilesPage = () => {
 
     return (
         <div>
-            <FileBrowser folder={currentFolder} />
+            <FileBrowser folder={currentFolder} esPapelera={false} />
             <FloatingActionButtons />
         </div>
     )

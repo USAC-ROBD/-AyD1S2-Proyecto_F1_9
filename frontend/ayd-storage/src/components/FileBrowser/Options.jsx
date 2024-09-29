@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2';
 
-export default function Options({ type, contextMenu, visible, setVisible, activeRename, activeDelete }) {
+export default function Options({ type, contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera }) {
     const contextMenuRef = useRef(null);
 
     const handleDownload = async () => {
@@ -65,25 +65,28 @@ export default function Options({ type, contextMenu, visible, setVisible, active
                 },
             }}
         >
-            <Button
-                variant="text"
-                color="inherit"
-                sx={{
-                    p: 1,
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                    textTransform: 'none',
-                    color: '#ffffff', // Texto claro para el fondo oscuro
-                    '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
-                    },
-                }}
-                onClick={activeRename}
-            >
-                Rename
-            </Button>
-            
-            {contextMenu.item.type === 'file' && <Button
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeRename}
+                >
+                    Rename
+                </Button>
+            )}
+
+
+            {contextMenu.item.type === 'file' && !esPapelera && <Button
                 variant="text"
                 color="inherit"
                 sx={{
@@ -101,7 +104,8 @@ export default function Options({ type, contextMenu, visible, setVisible, active
                 Download
             </Button>}
 
-            <Button
+            {!esPapelera && (
+                <Button
                 variant="text"
                 color="inherit"
                 sx={{
@@ -118,6 +122,29 @@ export default function Options({ type, contextMenu, visible, setVisible, active
             >
                 Delete
             </Button>
+            )}
+            
+
+            {esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeRestore}
+                >
+                    Restore
+                </Button>
+            )}
+
         </Box>
     );
 }

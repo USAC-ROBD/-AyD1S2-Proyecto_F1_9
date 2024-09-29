@@ -39,6 +39,10 @@ router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
 router.put('/rename', files.rename);
 router.put('/download', files.download);
+router.post('/deleteFile', files.deleteFile);
+router.post('/getDeletedFiles', files.getDeletedItems);
+router.post('/restoreFile', files.restoreFile);
+router.post('/emptyTrash', files.emptyTrash);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
