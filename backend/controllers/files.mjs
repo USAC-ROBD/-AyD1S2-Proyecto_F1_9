@@ -1,6 +1,8 @@
 import db from "../utils/db_connection.mjs"
-import { uploadFileS3 } from "../aws/s3.mjs";
-import { deleteObjectS3 } from "../aws/s3.mjs";
+import { uploadFileS3, downloadFileS3, deleteObjectS3 } from "../aws/s3.mjs";
+import os from 'os';
+import path from 'path';
+import fs from 'fs/promises';
 
 
 const getRootFolder = async (req, res) => {
@@ -41,11 +43,13 @@ const getChildItems = async (req, res) => {
                                                         ) AS CHILDREN
                                                 ) AS CHILDREN
                                                 FROM CARPETA
-                                                WHERE ELIMINADO = 0 and CARPETA.ID_CARPETA_PADRE = ?`, [idFolder])
+                                                WHERE ELIMINADO = 0 and CARPETA.ID_CARPETA_PADRE = ?
+                                                ORDER BY CARPETA.NOMBRE ASC`, [idFolder])
 
         const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
                                                     FROM ARCHIVO
-                                                    WHERE ELIMINADO = 0 and ARCHIVO.ID_CARPETA = ?`, [idFolder])
+                                                    WHERE ELIMINADO = 0 and ARCHIVO.ID_CARPETA = ?
+                                                    ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder])
 
         const folders = rows.map(folder => {
             return {
@@ -398,6 +402,41 @@ const getFiles = async (idFolder) => { //funcion para obtener los archivos y car
     }
 }
 
+const rename = async (req, res) => {
+    try {
+        const { idRename, idPadre, newName, type } = req.body
+        console.log({ idRename, newName, type })
+        const [rows] = await db.query(`
+            SELECT 1
+            FROM ${type === 'file' ? 'ARCHIVO' : 'CARPETA'}
+            WHERE NOMBRE = ? AND ${type === 'file' ? 'ID_CARPETA' : 'ID_CARPETA_PADRE'} = ?`, [newName, idPadre])
+        if(rows.length === 0) {
+            await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET NOMBRE = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?;`, [newName, idRename])
+            return res.status(200).json({ status: 200, icon: 'success', message: '' })
+        }
+        return res.status(202).json({ status: 202, icon: 'warning', message: `The ${type} named ${newName} already exists!` })
+    } catch(error) {
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
+const download = async (req, res) => {
+    try {
+        const { idFile, name } = req.body
+        const [rows] = await db.query('SELECT KEY_S3 FROM ARCHIVO WHERE ID_ARCHIVO = ?', [idFile])
+        const [file] = rows
+
+        const res_ = await downloadFileS3(file.KEY_S3.substring(1, file.KEY_S3.length))
+        const buffer = Buffer.from(res_)
+        const filePath = path.join(path.join(os.homedir(), 'Downloads'), name)
+        await fs.writeFile(filePath, buffer)
+
+        return res.status(200).json({ status: 200, icon: 'success', message: 'Downloaded' })
+    } catch(error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
 
 export const files = {
     getRootFolder,
@@ -407,5 +446,7 @@ export const files = {
     deleteFile,
     getDeletedItems,
     restoreFile,
-    emptyTrash
+    emptyTrash,
+    rename,
+    download,
 }

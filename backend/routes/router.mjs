@@ -37,6 +37,8 @@ router.post('/getRootFolder', files.getRootFolder);
 router.post('/getChildItems', files.getChildItems);
 router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
+router.put('/rename', files.rename);
+router.put('/download', files.download);
 router.post('/deleteFile', files.deleteFile);
 router.post('/getDeletedFiles', files.getDeletedItems);
 router.post('/restoreFile', files.restoreFile);
