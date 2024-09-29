@@ -140,9 +140,28 @@ const createFolder = async (req, res) => {
     }
 }
 
+const rename = async (req, res) => {
+    try {
+        const { idRename, idPadre, newName, type } = req.body
+        console.log({ idRename, newName, type })
+        const [rows] = await db.query(`
+            SELECT 1
+            FROM ${type === 'file' ? 'ARCHIVO' : 'CARPETA'}
+            WHERE NOMBRE = ? AND ${type === 'file' ? 'ID_CARPETA' : 'ID_CARPETA_PADRE'} = ?`, [newName, idPadre])
+        if(rows.length === 0) {
+            await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET NOMBRE = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?;`, [newName, idRename])
+            return res.status(200).json({ status: 200, icon: 'success', message: '' })
+        }
+        return res.status(202).json({ status: 202, icon: 'warning', message: `The ${type} named ${newName} already exists!` })
+    } catch(error) {
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 export const files = {
     getRootFolder,
     getChildItems,
     uploadFile,
     createFolder,
+    rename,
 }
