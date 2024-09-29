@@ -426,7 +426,7 @@ const download = async (req, res) => {
         const [rows] = await db.query('SELECT KEY_S3 FROM ARCHIVO WHERE ID_ARCHIVO = ?', [idFile])
         const [file] = rows
 
-        const res_ = await downloadFileS3(file.KEY_S3.substring(1, file.KEY_S3.length))
+        const res_ = await downloadFileS3(file.KEY_S3)
         const buffer = Buffer.from(res_)
         const filePath = path.join(path.join(os.homedir(), 'Downloads'), name)
         await fs.writeFile(filePath, buffer)

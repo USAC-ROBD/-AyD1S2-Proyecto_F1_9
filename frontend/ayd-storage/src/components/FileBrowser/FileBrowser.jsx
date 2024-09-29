@@ -186,6 +186,12 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     setVisible(false)
   }
 
+  const activeRestore = () => {
+    handleRestore(contextMenu.item)
+    setContextMenu(null)
+    setVisible(false)
+  }
+
   const getFileIcon = (fileName) => {
     const extension = fileName.split('.').pop().toLowerCase(); // Obtiene la extensión y la convierte a minúsculas
     switch (extension) {
@@ -407,6 +413,8 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         setVisible={setVisible}
         activeRename={activeRename}
         activeDelete={activeDelete}
+        activeRestore={activeRestore}
+        esPapelera={esPapelera}
       />
 
       {renameFile && (
