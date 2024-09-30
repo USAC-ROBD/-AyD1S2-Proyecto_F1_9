@@ -40,3 +40,15 @@ export const deleteMail = (email, name, confirmationLink) => {
             <a href="${confirmationLink}">Confirm Account</a>`
     }
 }
+
+export const warningMail = (email, name, confirmationLink) => {
+    return {
+        from: process.env.EMAIL_ORIGIN,
+        to: email,
+        subject: 'Account  warning of AyDStorage',
+        html: `<p>Hello ${name},</p>
+            <p>Your account will be deleted after 30 days.</p>
+            <p>Click on the following link to reactivate your account:</p>
+            <a href="${confirmationLink}">Reactivate Account</a>`
+    }
+}

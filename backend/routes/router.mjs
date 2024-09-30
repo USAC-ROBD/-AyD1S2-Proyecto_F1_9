@@ -40,6 +40,12 @@ router.post('/getRootFolder', files.getRootFolder);
 router.post('/getChildItems', files.getChildItems);
 router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
+router.put('/rename', files.rename);
+router.put('/download', files.download);
+router.post('/deleteFile', files.deleteFile);
+router.post('/getDeletedFiles', files.getDeletedItems);
+router.post('/restoreFile', files.restoreFile);
+router.post('/emptyTrash', files.emptyTrash);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
@@ -56,5 +62,12 @@ router.post('/processDeleteRequest', processDeleteRequestUser.processDeleteReque
 
 
 
+
+/******* Admin *******/
+router.get('/getAllAccounts', users.getAllAccounts)
+router.post('/createAccount',users.createAccount)
+router.post('/updateAccounts',users.updateAccounts)
+router.put('/warningAccount',users.warningAccount)
+router.put('/confirmationWarning',users.confirmationWarning)
 
 export default router;

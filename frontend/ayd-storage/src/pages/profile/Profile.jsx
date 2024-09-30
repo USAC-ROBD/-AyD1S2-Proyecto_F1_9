@@ -111,6 +111,11 @@ export default function Profile() {
                 })
                 if(response.ok) {
                     const data = await response.json()
+                    //si el cambio fue en PAIS_RESIDENCIA, se busca el nombre del pais
+                    if(changes.PAIS_RESIDENCIA) {
+                        const selectedCountry = countries.find(c => c.id === changes.PAIS_RESIDENCIA)
+                        changes.PAIS_RESIDENCIA = selectedCountry.name
+                    }
                     localStorage.setItem('USUARIO', JSON.stringify({ ...dataUser, ...changes }))
                     loadUser()
                     Swal.fire({
