@@ -12,12 +12,15 @@ const getRequests = async (req, res) => {
                     CONCAT(U.NOMBRE, ' ', U.APELLIDO) AS NOMBRE_USUARIO, 
                     U.USUARIO,
                     U.EMAIL,
+                    P.NOMBRE AS PAQUETE,
                     DATE_FORMAT(SCA.MODIFICACION , '%Y-%m-%d') AS MODIFICACION
                 FROM SOLICITUD_CAMBIO_ALMACENAMIENTO SCA
                 INNER JOIN CUENTA C
                 ON SCA.ID_CUENTA = C.ID_CUENTA
                 INNER JOIN USUARIO U
                 ON C.ID_USUARIO = U.ID_USUARIO
+                INNER JOIN PAQUETE P
+                ON P.ID_PAQUETE = SCA.ID_PAQUETE
                 WHERE ESTADO_SOLICITUD = '1'
                 AND C.ELIMINADO = '0'
                 ORDER BY SCA.MODIFICACION DESC`);
