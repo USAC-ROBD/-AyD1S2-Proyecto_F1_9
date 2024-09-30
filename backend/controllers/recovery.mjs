@@ -15,7 +15,7 @@ const recuperarContrasena = async (req, res) => {
         }
 
         const [dataUser, fields] = user
-        const confirmationLink = `${process.env.FRONT_URL}/setNewPassword?email=${email}`
+        const confirmationLink = `${process.env.REACT_APP_API_HOST}/setNewPassword?email=${email}`
         const mailOptions = recoveryMail(email, dataUser[0].NOMBRE, confirmationLink)
 
         transporter.sendMail(mailOptions, (error, info) => {

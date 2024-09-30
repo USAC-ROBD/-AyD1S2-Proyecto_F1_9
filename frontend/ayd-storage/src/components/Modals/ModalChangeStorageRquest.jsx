@@ -21,7 +21,7 @@ const ModalChangeStorageRequest = ({ open, handleClose, handleSubmit }) => {
 
         try {
     
-            const response = await fetch(`${process.env.FRONT_URL}/getCurrentStorage`, {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/getCurrentStorage`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

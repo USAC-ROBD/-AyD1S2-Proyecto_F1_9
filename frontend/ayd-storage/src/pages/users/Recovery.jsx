@@ -22,7 +22,7 @@ export default function Recovery() {
 
         try {
 
-            const response = await fetch(`${process.env.FRONT_URL}/recovery`, {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/recovery`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

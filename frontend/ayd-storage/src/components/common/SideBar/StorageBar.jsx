@@ -3,8 +3,16 @@ import { Box, LinearProgress, Typography } from '@mui/material';
 
 
 const StorageBar = ({used, total}) => {
-    const storagePercentage = ((Number(used) / total) * 100);
 
+    if(used === undefined || used === null  || total === undefined || total === null){
+        used = 0;
+        total = 0;
+    }
+
+    var storagePercentage = ((used / total) * 100).toFixed(3); 
+    if(isNaN(storagePercentage)){
+        storagePercentage = 0;
+    }
     return (
         <Box sx={{
             width: '75%',  // Ajusta el ancho de la barra
