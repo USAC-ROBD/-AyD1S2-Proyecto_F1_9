@@ -4,15 +4,17 @@ import db from "../utils/db_connection.mjs";
 const changeStorageRequest = async (req, res) => {
     const { email, id_paquete } = req.body;
 
+    console.log({ email, id_paquete })
+
     try {
         const changeRequest = await db.query(`
-            INSERT INTO solicitud_cambio_almacenamiento (ID_USUARIO, ID_CUENTA, ID_PAQUETE, ESTADO_SOLICITUD)
+            INSERT INTO SOLICITUD_CAMBIO_ALMACENAMIENTO (ID_USUARIO, ID_CUENTA, ID_PAQUETE, ESTADO_SOLICITUD)
             SELECT C.ID_USUARIO, C.ID_CUENTA, ?, 1
             FROM CUENTA C
             INNER JOIN USUARIO U
             ON U.ID_USUARIO = C.ID_USUARIO
             WHERE U.EMAIL = ?
-            AND C.ELIMINADO != 0`, [id_paquete,email]);
+            AND C.ELIMINADO = 0`, [id_paquete,email]);
 
         if (changeRequest[0].affectedRows === 0) {
             return res.status(404).json({ "status": 404, "message": "Error al procesar la solicitud " + configurations.host + ":" + configurations.port });

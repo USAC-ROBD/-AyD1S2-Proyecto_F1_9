@@ -25,8 +25,11 @@ const Requests = () => {
 
             const data = await response.json();
 
-            console.log(data.solicitudes_cambio_almacenamiento, data.solicitudes_eliminar_cuenta);
+            // console.log(data.solicitudes_cambio_almacenamiento, data.solicitudes_eliminar_cuenta);
             setChangeStorageRequests(data.solicitudes_cambio_almacenamiento);
+
+            console.log('SOLICITUDES', data.solicitudes_cambio_almacenamiento)
+
             setDeleteAccountRequests(data.solicitudes_eliminar_cuenta);
 
             if (data.status === 404) {
@@ -62,7 +65,7 @@ const Requests = () => {
         setPageDeleteAccount(0);
     };
 
-    const processChangeStorageRequest = async (id, state) => {
+    const processChangeStorageRequest = async (id, state, accountId, packetId) => {
 
         try {
             const response = await fetch(`${process.env.REACT_APP_API_HOST}/processChangeStorageRequest`, {
@@ -70,7 +73,7 @@ const Requests = () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ id, state })
+                body: JSON.stringify({ id, state, accountId, packetId })
             });
 
             const data = await response.json();
@@ -133,10 +136,10 @@ const Requests = () => {
     };
 
 
-    const handleApproveRequest = (requestId, typeRequest, status) => {
+    const handleApproveRequest = (requestId, typeRequest, status, accountId, packetId) => {
 
         if (typeRequest === 'changeStorage') {
-            processChangeStorageRequest(requestId, status);
+            processChangeStorageRequest(requestId, status, accountId, packetId);
         } else {       
             processDeleteRequest(requestId, status);
         }
@@ -170,7 +173,7 @@ const Requests = () => {
                                 <TableCell>{request.PAQUETE}</TableCell>
                                 <TableCell>{request.MODIFICACION}</TableCell>
                                 <TableCell>
-                                    <Button variant="contained" color="primary" onClick={() => handleApproveRequest(request.ID_SOLICITUD,'changeStorage','2')}>
+                                    <Button variant="contained" color="primary" onClick={() => handleApproveRequest(request.ID_SOLICITUD,'changeStorage','2', request.ID_CUENTA, request.ID_PAQUETE)}>
                                         Approve
                                     </Button>
                                     <Button variant="contained" color="secondary" onClick={() => handleApproveRequest(request.ID_SOLICITUD,'changeStorage','3')}>

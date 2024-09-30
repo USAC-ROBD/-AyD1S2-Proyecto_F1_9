@@ -425,16 +425,11 @@ const rename = async (req, res) => {
 
 const download = async (req, res) => {
     try {
-        const { idFile, name } = req.body
+        const { idFile } = req.body
         const [rows] = await db.query('SELECT KEY_S3 FROM ARCHIVO WHERE ID_ARCHIVO = ?', [idFile])
         const [file] = rows
 
-        const res_ = await downloadFileS3(file.KEY_S3)
-        const buffer = Buffer.from(res_)
-        const filePath = path.join(path.join(os.homedir(), 'Downloads'), name)
-        await fs.writeFile(filePath, buffer)
-
-        return res.status(200).json({ status: 200, icon: 'success', message: 'Downloaded' })
+        return res.status(200).json({ status: 200, icon: 'success', message: '', url: file.KEY_S3 })
     } catch(error) {
         console.log(error)
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })

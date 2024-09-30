@@ -11,7 +11,7 @@ const HomePage = () => {
             } else if (tipoUsuario === 2) { // si es cliente mandarlo a la pagina de archivos
                 navigate('/files')
             } else if (tipoUsuario === 3) { // si es cliente mandarlo a la pagina de archivos
-                //navigate('/empleado')
+                navigate('/employee')
             }
         } else {
             localStorage.removeItem('USUARIO')

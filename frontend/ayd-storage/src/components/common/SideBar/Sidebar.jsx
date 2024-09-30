@@ -52,6 +52,16 @@ const Sidebar = () => {
     },
     {
       level: 0,
+      state: "Employee",
+      path: "/employee",
+      sidebarProps: {
+        icon: <AdminPanelSettings />,
+        displayText: "Empleado",
+      },
+      userType: 3, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    {
+      level: 0,
       state: "Requests",  // Apartados para las solicitudes
       path: "/requests",
       sidebarProps: {
