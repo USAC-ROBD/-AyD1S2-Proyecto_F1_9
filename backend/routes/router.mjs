@@ -9,6 +9,9 @@ import {getCurrentStorageUser} from '../controllers/getCurrentStorage.mjs';
 import {changeStorageRequestUser} from '../controllers/changeStorageRequest.mjs';
 import {deleteAccountRequestUser} from '../controllers/deleteAccountRequest.mjs';
 import {registerDeleteAccountRequestUser} from '../controllers/registerDeleteAccountRequest.mjs';
+import {getRequestsUser} from '../controllers/getRequests.mjs';
+import { processChangeStorageRequestUser } from '../controllers/processChangeStorageRequest.mjs';
+import { processDeleteRequestUser } from '../controllers/processDeleteRequest.mjs';
 
 
 const router = Router();
@@ -39,6 +42,10 @@ router.post('/uploadFile', files.uploadFile);
 router.post('/createFolder', files.createFolder);
 router.put('/rename', files.rename);
 router.put('/download', files.download);
+router.post('/deleteFile', files.deleteFile);
+router.post('/getDeletedFiles', files.getDeletedItems);
+router.post('/restoreFile', files.restoreFile);
+router.post('/emptyTrash', files.emptyTrash);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
@@ -47,6 +54,13 @@ router.post('/changeStorageRequest', changeStorageRequestUser.changeStorageReque
 /***** Delete account ******/
 router.post('/deleteAccountRequest', deleteAccountRequestUser.deleteAccountRequest);
 router.post('/registerDeleteAccountRequest', registerDeleteAccountRequestUser.registerDeleteAccountRequest);
+
+/***** Get requests ******/
+router.get('/getRequests', getRequestsUser.getRequests);
+router.post('/processChangeStorageRequest', processChangeStorageRequestUser.processChangeStorageRequest);
+router.post('/processDeleteRequest', processDeleteRequestUser.processDeleteRequest);    
+
+
 
 
 /******* Admin *******/

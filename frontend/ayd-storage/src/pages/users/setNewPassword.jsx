@@ -45,7 +45,7 @@ export default function SetNewPassword() {
 
     async function establecerContrasena(email_, password_) {
         try {
-            const response = await fetch(`${process.env.FRONT_URL}/setNewPassword`, {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/setNewPassword`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

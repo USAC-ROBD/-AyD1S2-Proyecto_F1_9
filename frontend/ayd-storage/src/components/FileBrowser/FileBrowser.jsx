@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import {triggerAction} from '../../redux/features/storageBarSlice';
+import { triggerAction } from '../../redux/features/storageBarSlice';
 import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
@@ -17,10 +17,11 @@ import vau from '../../assets/images/vau_icon.svg';
 import xls from '../../assets/images/xls_icon.svg';
 import FormUploadFile from './FormUploadFile';
 import FormCreateFolder from './FormCreateFolder';
-import ContextMenu from './Options';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
+import ContextMenu from './Options';
 
-const FileBrowser = ({ folder }) => {
+const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
   const [currentFolderId, setCurrentFolderId] = useState(folder);
   const [currentFolder, setCurrentFolder] = useState([]);
@@ -35,11 +36,19 @@ const FileBrowser = ({ folder }) => {
 
   // Inicializar la carpeta raíz
   useEffect(() => {
-    setCurrentFolderId(folder);
-  }, [folder]);
+    if (!esPapelera) {
+      setCurrentFolderId(folder);
+    }
+  }, [esPapelera, folder]);
 
   useEffect(() => {
-    fetchChildItems(currentFolderId);
+    if (!esPapelera) {
+      fetchChildItems(currentFolderId);
+    }
+    if (esPapelera) {
+      const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+      fetchDeletedItems(usuario);
+    }
   }, [currentFolderId]);
 
   const fetchChildItems = async (idFolder) => {
@@ -60,7 +69,27 @@ const FileBrowser = ({ folder }) => {
       .catch(error => console.error('Error:', error));
   };
 
+  const fetchDeletedItems = async (usuario) => {
+    console.log(usuario);
+    if (!usuario) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/getDeletedFiles`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idUsuario: usuario.ID_USUARIO })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          setCurrentFolder(data.children);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
   const enterFolder = (newFolder) => {
+    if (esPapelera) return; //si esta en la papelera no se pueden abrir carpetas
     setHistory([...history, currentFolderId]);
     setCurrentFolderId(newFolder);
   };
@@ -115,8 +144,11 @@ const FileBrowser = ({ folder }) => {
   };
 
   const handleDelete = (item) => {
-    const filtered = currentFolder.filter((i) => i !== item);
-    setCurrentFolder(filtered);
+    fetchDeleteFile(item);
+  };
+
+  const handleRestore = (item) => {
+    fetchRestoreFile(item);
   };
 
   const handleUploadFile = (file) => {
@@ -154,6 +186,12 @@ const FileBrowser = ({ folder }) => {
     setVisible(false)
   }
 
+  const activeRestore = () => {
+    handleRestore(contextMenu.item)
+    setContextMenu(null)
+    setVisible(false)
+  }
+
   const getFileIcon = (fileName) => {
     const extension = fileName.split('.').pop().toLowerCase(); // Obtiene la extensión y la convierte a minúsculas
     switch (extension) {
@@ -186,6 +224,95 @@ const FileBrowser = ({ folder }) => {
     }
   }
 
+  const fetchDeleteFile = async (item) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/deleteFile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idFile: item.id, type: item.type })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('File moved to recycling bin');
+          const filtered = currentFolder.filter((i) => i !== item);
+          setCurrentFolder(filtered);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  const fetchRestoreFile = async (item) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/restoreFile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idFile: item.id, type: item.type })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('File moved to recycling bin');
+          const filtered = currentFolder.filter((i) => i !== item);
+          setCurrentFolder(filtered);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  const handleEmptyTrash = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to undo this action!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, empty the trash',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // User pressed confirm
+        fetchEmptyTrash();
+        Swal.fire(
+          'Emptied!',
+          'The trash has been emptied.',
+          'success'
+        );
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // User pressed cancel
+        Swal.fire(
+          'Cancelled',
+          'Your trash is still intact :)',
+          'error'
+        );
+        // Additional logic when canceled
+      }
+    });
+  };
+
+  const fetchEmptyTrash = async () => {
+    const idUser = JSON.parse(localStorage.getItem('USUARIO')).ID_USUARIO;
+    if (!idUser) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/emptyTrash`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idUser })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          console.log('Trash emptied');
+          setCurrentFolder([]);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
   return (
     <Container
       component="main"
@@ -205,7 +332,7 @@ const FileBrowser = ({ folder }) => {
         <Grid container spacing={1}>
           <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
             <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-              File Explorer
+              {esPapelera ? 'Recycling Bin' : 'Files'}
             </Typography>
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
@@ -213,14 +340,43 @@ const FileBrowser = ({ folder }) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
+            {!esPapelera && (
+              <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
+            )}
+
           </Grid>
+          {!esPapelera && (
+            <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+
+              <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
+
+            </Grid>
+          )}
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <FormCreateFolder parentFolder={currentFolderId} onCreateFolder={handleCreateFolder} />
+            {esPapelera && (
+              <Button
+                sx={{
+                  color: '#fff',
+                  transition: 'box-shadow 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 0px 12px rgba(255, 255, 255, 0.68)',
+                  },
+                  border: '1px solid #fff',
+                }}
+                onClick={handleEmptyTrash}
+              >
+                <DeleteOutlineIcon sx={{ color: '#fff', fontSize: '2rem', marginRight: '5px' }} />
+                Empty Trash
+              </Button>
+            )}
           </Grid>
 
 
@@ -257,6 +413,8 @@ const FileBrowser = ({ folder }) => {
         setVisible={setVisible}
         activeRename={activeRename}
         activeDelete={activeDelete}
+        activeRestore={activeRestore}
+        esPapelera={esPapelera}
       />
 
       {renameFile && (

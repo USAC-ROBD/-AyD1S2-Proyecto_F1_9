@@ -46,7 +46,7 @@ const FloatingActionButtons = () => {
 
         try {
 
-            const response = await fetch(`${process.env.FRONT_URL}/deleteAccountRequest`, {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/deleteAccountRequest`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

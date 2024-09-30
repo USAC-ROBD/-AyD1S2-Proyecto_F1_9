@@ -10,8 +10,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
+import Feedback from '@mui/icons-material/Feedback';  //icono para las solicitudes
 import { resetAction } from "../../../redux/features/storageBarSlice";
 
 const Sidebar = () => {
@@ -20,6 +22,8 @@ const Sidebar = () => {
   }); // Escucha el cambio de estado
   const dispatch = useDispatch();
   // Calcula el porcentaje de almacenamiento utilizado
+
+  const userType  = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
   const [usedStorage, setUsedStorage] = useState(0);
   const [totalStorage, setTotalStorage] = useState(0); //varia dependiendo del plan del usuario
   const [structDB, setStructDB] = useState([]);
@@ -48,6 +52,16 @@ const Sidebar = () => {
     },
     {
       level: 0,
+      state: "Requests",  // Apartados para las solicitudes
+      path: "/requests",
+      sidebarProps: {
+        icon: <Feedback />,
+        displayText: "Requests",
+      },
+      userType: 1,
+    },
+    {
+      level: 0,
       state: "Files",
       path: "/files",
       sidebarProps: {
@@ -66,6 +80,16 @@ const Sidebar = () => {
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },
+    {
+      level: 0,
+      state: "Recycling",
+      path: "/recycling",
+      sidebarProps: {
+        icon: <DeleteOutlineIcon />,
+        displayText: "Recycling Bin",
+      },
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
   ]
 
   useEffect(() => {
@@ -78,7 +102,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     //TODO: Verificar en el localStorage el tipo de usuario y mostrar los items correspondientes con un filter
-    const userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
+    //userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
     let filteredItems = [];
     if (!userType) { // Si no hay usuario logueado
       navigate('/');
@@ -156,7 +180,7 @@ const Sidebar = () => {
             borderColor: "rgb(255 255 255 / 30%)"
           }}
         />
-        <StorageBar used={usedStorage} total={totalStorage} />
+        {userType === 2 ? <StorageBar  used={usedStorage} total={totalStorage} />: null}        
       </List>
 
       <Box sx={{ position: 'absolute', bottom: 0, width: '100%' }}>
