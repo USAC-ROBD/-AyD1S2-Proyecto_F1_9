@@ -30,6 +30,15 @@ const appRoutes = [
         }
     },
     {
+        path: "/employee",
+        element: <AdminPage />,
+        state: "Employee",
+        sidebarProps: {
+            displayText: "Empleado",
+            icon: <AdminPanelSettings />
+        }
+    },
+    {
         path: "/files/:id", // identificador de la carpeta
         element: <FilesPage />,
         state: "File",
