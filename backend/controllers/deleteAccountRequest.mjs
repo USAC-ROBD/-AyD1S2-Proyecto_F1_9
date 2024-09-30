@@ -13,13 +13,13 @@ const deleteAccountRequest = async (req, res) => {
         }
 
         const [dataUser, fields] = user
-        const confirmationLink = `${process.env.REACT_APP_API_HOST}/deleteAccount?email=${email}`
+        const confirmationLink = `${process.env.FRONT_URL}/deleteAccount?email=${email}`
         const mailOptions = deleteMail(email, dataUser[0].NOMBRE, confirmationLink)
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
             console.log(error)
-               return res.status(500).json({status: 500, icon: 'error', message: 'Error sending confirmation email!'})
+                return res.status(500).json({status: 500, icon: 'error', message: 'Error sending confirmation email!'})
             }
         })
 
