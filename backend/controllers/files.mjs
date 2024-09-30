@@ -7,16 +7,19 @@ import fs from 'fs/promises';
 const getRootFolder = async (req, res) => {
     try {
         //sacamos los valores del json
-        const { username } = req.body
+        const { username, id_account } = req.body
 
         if (!username) return res.status(400).json({ status: 400, message: 'User ID is required to get root folder' })
 
         //retornamos la carpeta raíz
-        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA 
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA
                                                 FROM USUARIO 
                                                     INNER JOIN CUENTA on USUARIO.ID_USUARIO = CUENTA.ID_USUARIO 
                                                     INNER JOIN CARPETA on CUENTA.ID_CUENTA = CARPETA.ID_CUENTA
-                                                WHERE USUARIO.USUARIO = ? AND CARPETA.ID_CARPETA_PADRE IS NULL AND CARPETA.NOMBRE =''`, [username])
+                                                WHERE USUARIO.USUARIO = ? 
+                                                    AND CARPETA.ID_CARPETA_PADRE IS NULL 
+                                                    AND CARPETA.ID_CUENTA = ?
+                                                    AND CARPETA.NOMBRE =''`, [username, id_account])
         
         if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Root folder not found' })
 

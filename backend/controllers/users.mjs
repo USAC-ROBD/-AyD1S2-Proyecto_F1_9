@@ -9,18 +9,22 @@ const getCountries = async (req, res) => {
 const login = async (req, res) => {
     const { userEmail, password } = req.query
     const [rows, fields] = await db.query(`SELECT
-        ID_USUARIO,
-        NOMBRE,
-        APELLIDO,
-        USUARIO,
-        EMAIL,
-        CONFIRMADO,
-        ROL,
-        CELULAR,
-        NACIONALIDAD,
-        (SELECT NOMBRE FROM PAIS WHERE ID_PAIS = PAIS_RESIDENCIA) AS PAIS_RESIDENCIA
-    FROM USUARIO
-    WHERE (USUARIO = ? OR EMAIL = ?) AND CONTRASENA = SHA2(?, 256)`, [userEmail, userEmail, password])
+        U.ID_USUARIO,
+        U.NOMBRE,
+        U.APELLIDO,
+        U.USUARIO,
+        U.EMAIL,
+        U.CONFIRMADO,
+        U.ROL,
+        U.CELULAR,
+        U.NACIONALIDAD,
+        (SELECT NOMBRE FROM PAIS WHERE ID_PAIS = U.PAIS_RESIDENCIA) AS PAIS_RESIDENCIA,
+        C.ID_CUENTA,
+        C.ELIMINADO,
+        C.ELIMINACION
+    FROM USUARIO U
+        LEFT JOIN CUENTA C ON U.ID_USUARIO = C.ID_USUARIO AND C.FECHA_CREACION = (SELECT MAX(FECHA_CREACION) FROM CUENTA WHERE ID_USUARIO = U.ID_USUARIO)
+    WHERE (U.USUARIO = ? OR U.EMAIL = ?) AND U.CONTRASENA = SHA2(?, 256)`, [userEmail, userEmail, password])
 
     if(rows.length > 0) {
         if(rows[0].CONFIRMADO === 0) {
@@ -294,7 +298,8 @@ const warningAccount = async (req, res) => {
         // Actualizar el estado de ELIMINADO a 2
         const updateQuery = `
             UPDATE CUENTA
-            SET ELIMINADO = 2
+            SET     ELIMINADO = 2,
+                    ELIMINACION = DATE_ADD(CURRENT_DATE(), INTERVAL 30 DAY)
             WHERE ID_CUENTA = ?
         `;
         await db.query(updateQuery, [id_cuenta]);
@@ -358,6 +363,42 @@ const confirmationWarning = async (req, res) => {
     }
 };
 
+const deleteAccount = async (req, res) => {
+    const { id_cuenta } = req.body;
+
+    if (!id_cuenta) {
+        return res.status(400).json({ status: 400, message: 'Faltan datos para eliminar la cuenta' });
+    }
+
+    try {
+        // Verificar si la cuenta existe y obtener detalles como el email asociado
+        const accountQuery = `
+            SELECT ID_CUENTA, EMAIL, NOMBRE
+            FROM CUENTA
+            JOIN USUARIO ON CUENTA.ID_USUARIO = USUARIO.ID_USUARIO
+            WHERE ID_CUENTA = ?
+        `;
+        const [accountRows] = await db.query(accountQuery, [id_cuenta]);
+
+        if (!accountRows.length) {
+            return res.status(400).json({ status: 400, message: 'La cuenta no existe' });
+        }
+
+        // Actualizar el estado de ELIMINADO a 1
+        const updateQuery = `
+            UPDATE CUENTA
+            SET ELIMINADO = 1
+            WHERE ID_CUENTA = ?
+        `;
+        await db.query(updateQuery, [id_cuenta]);
+
+        return res.status(200).json({ status: 200, message: 'Estado de la cuenta actualizado a ELIMINADO = 1' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ status: 500, message: 'Error al eliminar la cuenta' });
+    }
+};
+
 export const users = {
     getCountries,
     login,
@@ -369,4 +410,5 @@ export const users = {
     updateProfile,
     warningAccount,
     confirmationWarning,
+    deleteAccount
 }
