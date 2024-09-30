@@ -48,8 +48,19 @@ export default function Login() {
             });
 
             if(data.icon === 'success') {
-                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL} = data.data
-                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL}))
+                const {ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL, ID_CUENTA, ELIMINADO, ELIMINACION} = data.data
+
+                if(ELIMINADO === 1) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Your account has been deleted!',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                    return
+                }
+
+                localStorage.setItem('USUARIO', JSON.stringify({ID_USUARIO, NOMBRE, APELLIDO, USUARIO, EMAIL, NACIONALIDAD, PAIS_RESIDENCIA, CELULAR, ROL, ID_CUENTA, ELIMINADO, ELIMINACION}))
                 navigate('/home')
             }
         } catch(e) {
