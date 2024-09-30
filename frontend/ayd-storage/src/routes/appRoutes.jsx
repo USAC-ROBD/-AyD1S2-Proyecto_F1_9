@@ -65,7 +65,7 @@ const appRoutes = [
             icon: <Feedback />
         }
     }
-    },{
+    ,{
         path: "/recycling",
         element: <PapeleraPage />,
         state: "Recycling",
