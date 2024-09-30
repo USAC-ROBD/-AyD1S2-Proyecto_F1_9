@@ -156,6 +156,7 @@ const Requests = () => {
                             <TableCell>Name</TableCell>
                             <TableCell>User</TableCell>
                             <TableCell>Email</TableCell>
+                            <TableCell>New Package</TableCell>
                             <TableCell>Request date</TableCell>
                             <TableCell className='buttons_cell'>Actions</TableCell>
                         </TableRow>
@@ -166,6 +167,7 @@ const Requests = () => {
                                 <TableCell>{request.NOMBRE_USUARIO}</TableCell>
                                 <TableCell>{request.USUARIO}</TableCell>
                                 <TableCell>{request.EMAIL}</TableCell>
+                                <TableCell>{request.PAQUETE}</TableCell>
                                 <TableCell>{request.MODIFICACION}</TableCell>
                                 <TableCell>
                                     <Button variant="contained" color="primary" onClick={() => handleApproveRequest(request.ID_SOLICITUD,'changeStorage','2')}>
