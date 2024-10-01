@@ -1,0 +1,8 @@
+
+backend/.env
+
+backend/node_modules/
+
+package-lock.json
+
+backend/coverage/
