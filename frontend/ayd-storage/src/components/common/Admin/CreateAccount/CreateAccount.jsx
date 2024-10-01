@@ -19,7 +19,7 @@ export default function CreateAccount() {
     const [phoneExtension, setPhoneExtension] = useState('')
     const [phone, setPhone] = useState('')
     const [role, setRole] = useState(2);
-    const [roleOptions] = useState([
+    const [roleOptions, setRoleOptions] = useState([
         { label: 'Customer', value: 2 },
         { label: 'Employee', value: 3 }
     ]);
@@ -172,6 +172,10 @@ export default function CreateAccount() {
         const localStorage_user = JSON.parse(localStorage.getItem('USUARIO'));
         setUser(localStorage_user.USUARIO);
         getCountries()
+
+        if (localStorage_user.ROL === 3) {
+            setRoleOptions(prevOptions => prevOptions.filter(option => option.value !== 3));
+        }
     }, [])
 
     useEffect(() => {
