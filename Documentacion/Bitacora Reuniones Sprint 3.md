@@ -3,7 +3,7 @@
 ## Sprint 3 - Documento de Seguimiento
 
 ### Daily Scrum 1 - 19/09/2024
-![daily1](./assets/daily-1-sprint-3.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Papelera| N/A    | N/A |
@@ -11,9 +11,10 @@
 | Douglas     | visualizacion y aprobacion de solicitudes | N/A             | N/A|
 | Danny       | Renombrar Archivos/ Carpetas | N/A    | N/A|
 | Max         | Correccion tipos de cuentas al crear usuarios como administrador  |  N/A| N/A|
+<div><img src="./assets/daily-1-sprint-3.png" width="1000px"/></div>
 
 ### Daily Scrum 2 - 20/09/2024
-![daily1](./assets/daily-2-sprint-3.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Restaurar Archivos eliminados | Papelera| N/A |
@@ -21,9 +22,10 @@
 | Douglas     | visualizacion y aprobacion de solicitudes | N/A             | N/A|
 | Danny       | Descargar Archivos     | Renombrar Archivos/ Carpetas   | N/A|
 | Max         | Notificaciones de eliminacion en 30 dias a los usuarios |  Correccion tipos de cuentas al crear usuarios como administrador| N/A|
+<div><img src="./assets/daily-2-sprint-3.png" width="1000px"/></div>
 
 ### Daily Scrum 3 - 21/09/2024
-![daily1](./assets/daily-3-sprint-3.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Vaciar Papelera | Restaurar Archivos eliminados  | N/A |
@@ -31,6 +33,7 @@
 | Douglas     | visualizacion y aprobacion de solicitudes | N/A             | N/A|
 | Danny       | Descargar Archivos  | N/A    | N/A|
 | Max         | Cambio de estado de usuarios a estado de advertencia de eliminación  |  Notificaciones de eliminacion en 30 dias a los usuarios| N/A|
+<div><img src="./assets/daily-3-sprint-3.png" width="1000px"/></div>
 
 ### Tabla de Sprint Backlog
 
