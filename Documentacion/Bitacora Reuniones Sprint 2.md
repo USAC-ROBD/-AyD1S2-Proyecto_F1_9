@@ -3,7 +3,7 @@
 ## Sprint 2 - Documento de Seguimiento
 
 ### Daily Scrum 1 - 15/09/2024
-![daily1](./assets/daily-1-sprint-2.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Agregar Archivo/Carpeta| N/A    | N/A |
@@ -11,9 +11,10 @@
 | Douglas     | Crear Solicitud de expansion | N/A             | N/A|
 | Danny       | Modificar Perfil      | N/A    | N/A|
 | Max         | Backend para creacion de cuentas desde Administrador  |  N/A| N/A|
+<div><img src="./assets/daily-1-sprint-2.png" width="1000px"/></div>
 
 ### Daily Scrum 2 - 16/09/2024
-![daily1](./assets/daily-2-sprint-2.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Agregar Archivo/Carpeta | N/A| N/A |
@@ -21,9 +22,10 @@
 | Douglas     | Crear Solicitud de expansion | N/A             | N/A|
 | Danny       | Modificar Perfil      | N/A    | N/A|
 | Max         | Backend para creacion de cuentas desde Administrador  |  N/A| N/A|
+<div><img src="./assets/daily-2-sprint-2.png" width="1000px"/></div>
 
 ### Daily Scrum 3 - 17/09/2024
-![daily1](./assets/daily-3-sprint-2.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Barra de almacenamiento en sidebar | Creacion de cuenta y carpeta raiz    | N/A |
@@ -31,6 +33,7 @@
 | Douglas     | Crear Solicitud de expansion | N/A             | N/A|
 | Danny       | Modificar Perfil      | N/A    | N/A|
 | Max         | Backend para creacion de cuentas desde Administrador  |  N/A| N/A|
+<div><img src="./assets/daily-3-sprint-2.png" width="1000px"/></div>
 
 ### Tabla de Sprint Backlog
 

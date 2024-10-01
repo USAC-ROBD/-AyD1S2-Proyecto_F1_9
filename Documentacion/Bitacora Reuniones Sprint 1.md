@@ -4,7 +4,7 @@
 
 ### Daily Scrum 1 - 11/09/2024
 
-![daily1](./assets/daily-1-sprint-1.png)
+
 
 | Integrante  | Tarea para hoy                   | Tarea completada ayer | Impedimentos |
 |-------------|----------------------------------|-----------------------|--------------|
@@ -15,9 +15,11 @@
 | Max         | Componente de carpeta/Archivo      | N/A               | N/A|
 
 
+<div><img src="./assets/daily-1-sprint-1.png" width="1000px"/></div>
+
 
 ### Daily Scrum 2 - 12/09/2024
-![daily1](./assets/daily-2-sprint-1.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Crear SideBar | Estructua de Backend  y Frontend | N/A |
@@ -26,8 +28,10 @@
 | Danny       | Inicio Sesión       | Registro de usuarios  | N/A|
 | Max         | Crear Cuentas Administrador   |  Componente de carpeta/Archivo | N/A|
 
+<div><img src="./assets/daily-2-sprint-1.png" width="1000px"/></div>
+
 ### Daily Scrum 3 - 13/09/2024
-![daily1](./assets/daily-3-sprint-1.png)
+
 | Integrante  | Tarea para hoy | Tarea completada ayer | Impedimentos |
 |-------------|----------------|-----------------------|--------------|
 | Steven      | Crear SideBar | N/A    | N/A |
@@ -35,6 +39,8 @@
 | Douglas     | Recuperar Contraseña  | N/A             | N/A|
 | Danny       | Inicio Sesión       | N/A    | N/A|
 | Max         | Modificar configuraciones de cuentas   |  Crear Cuentas Administrador| N/A|
+
+<div><img src="./assets/daily-3-sprint-1.png" width="1000px"/></div>
 
 ### Tabla de Sprint Backlog
 

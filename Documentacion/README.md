@@ -67,6 +67,9 @@ Git Flow es una metodología de ramificación estructurada y utilizada principal
 
 * **Hotfix Branches**: Se crean desde Master para corregir errores críticos en producción. Una vez corregido, se fusionan tanto en Master como en Develop.
 
+### Diagrama de branching al finalizar Fase 1:
+
+<div align="center"><img src="./assets/GitFlowPF1.png"/></div>
 
 ## Toma de Requerimientos
 
