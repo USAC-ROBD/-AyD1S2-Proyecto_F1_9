@@ -7,9 +7,9 @@ const getCurrentStorage = async (req, res) => {
     try {
         const packages = await db.query(`
             SELECT p.* 
-            FROM paquete p 
-            INNER JOIN cuenta c ON c.ID_PAQUETE != p.ID_PAQUETE 
-            INNER JOIN usuario u ON u.ID_USUARIO = c.id_usuario 
+            FROM PAQUETE p 
+            INNER JOIN CUENTA c ON c.ID_PAQUETE != p.ID_PAQUETE 
+            INNER JOIN USUARIO u ON u.ID_USUARIO = c.ID_USUARIO 
             WHERE u.EMAIL = ?`, [email]);
 
         if (packages[0].length === 0) {
