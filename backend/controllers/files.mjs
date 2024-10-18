@@ -222,13 +222,13 @@ const deleteFile = async (req, res) => {
         //cambiamos el estado del archivo/ carpeta eliminado
 
         if (type === 'file') {
-            const [rows, fields] = await db.query(`UPDATE archivo SET ELIMINADO = 1 WHERE ID_ARCHIVO = ?`, [idFile])
+            const [rows, fields] = await db.query(`UPDATE ARCHIVO SET ELIMINADO = 1 WHERE ID_ARCHIVO = ?`, [idFile])
 
             if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'File not found' })
 
             return res.status(200).json({ status: 200, message: 'File moved to recycling bin' })
         } else if (type === 'folder') {
-            const [rows, fields] = await db.query(`UPDATE carpeta SET ELIMINADO = 1 WHERE ID_CARPETA = ?`, [idFile])
+            const [rows, fields] = await db.query(`UPDATE CARPETA SET ELIMINADO = 1 WHERE ID_CARPETA = ?`, [idFile])
 
             if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'Folder not found' })
 
@@ -251,13 +251,13 @@ const restoreFile = async (req, res) => {
         //cambiamos el estado del archivo/ carpeta eliminado
 
         if (type === 'file') {
-            const [rows, fields] = await db.query(`UPDATE archivo SET ELIMINADO = 0 WHERE ID_ARCHIVO = ?`, [idFile])
+            const [rows, fields] = await db.query(`UPDATE ARCHIVO SET ELIMINADO = 0 WHERE ID_ARCHIVO = ?`, [idFile])
 
             if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'File not found' })
 
             return res.status(200).json({ status: 200, message: 'File restored' })
         } else if (type === 'folder') {
-            const [rows, fields] = await db.query(`UPDATE carpeta SET ELIMINADO = 0 WHERE ID_CARPETA = ?`, [idFile])
+            const [rows, fields] = await db.query(`UPDATE CARPETA SET ELIMINADO = 0 WHERE ID_CARPETA = ?`, [idFile])
 
             if (rows.affectedRows === 0) return res.status(404).json({ status: 404, message: 'Folder not found' })
 
