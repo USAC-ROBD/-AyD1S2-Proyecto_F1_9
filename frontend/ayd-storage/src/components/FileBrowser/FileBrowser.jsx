@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { triggerAction } from '../../redux/features/storageBarSlice';
-import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, IconButton, Tooltip, Badge, } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
@@ -21,6 +21,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
 import FormShare from './FormShare';
+import { AccountCircle } from '@mui/icons-material';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 
 const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
@@ -155,8 +157,8 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
 
       const data = await response.json()
 
-      if(response.ok) {
-        if(data.icon === 'success') {
+      if (response.ok) {
+        if (data.icon === 'success') {
           renameFile.name = newName;
           setCurrentFolder([...currentFolder]);
           setRenameFile(null);
@@ -429,10 +431,26 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
                 margin: '10px',
                 textAlign: 'center',
                 cursor: 'pointer',
+                position: 'relative',
                 minWidth: '100px',
                 maxWidth: '100px',
               }}
             >
+              {
+                (item.shared > 0) && (
+                  <Tooltip title={"You are sharing this item with " + item.shared + " users"} arrow>
+                    <Badge
+                      overlap="circular"
+                      badgeContent={<ShareOutlinedIcon sx={{ fontSize: 25 }} />}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      sx={{ position: 'absolute', top: '5px', right: '15px' }} // Adjust position
+                    />
+                  </Tooltip>
+                )
+              }
               <img
                 src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : getFileIcon(item.name)}
                 alt={item.name}
@@ -456,10 +474,10 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
         onSetFavItem={fetchFavItems}
       />
 
-      <FormShare 
-        file={shareFile} 
-        visible={visibleFormShare} 
-        setVisible={setVisibleFormShare} 
+      <FormShare
+        file={shareFile}
+        visible={visibleFormShare}
+        setVisible={setVisibleFormShare}
       />
 
       {renameFile && (

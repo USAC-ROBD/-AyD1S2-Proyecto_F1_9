@@ -29,6 +29,12 @@ const shareItem = async (req, res) => {
 
         const [dataDestinationUser, fields2] = destinationUser
 
+        //validamos que el usuario destino sea de tipo cliente
+
+        if (dataDestinationUser[0].ROL !== 2) {
+            return res.status(400).json({ "status": 400, "message": "You can't share files with this user" });
+        }
+
 
         if (type === 'file') {
             // validamos si el archivo ya fue compartido
