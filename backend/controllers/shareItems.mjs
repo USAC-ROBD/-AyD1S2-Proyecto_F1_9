@@ -49,7 +49,7 @@ const shareItem = async (req, res) => {
             await db.query("INSERT INTO COMPARTIR (ID_USUARIO_PROPIETARIO, ID_USUARIO_DESTINO, TIPO_COMPARTIR, ID_ARCHIVO, ID_CARPETA, FECHA_COMPARTIR) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)", [currentUserId, dataDestinationUser[0].ID_USUARIO, 1, idFile, null]);
 
             return res.status(200).json({ "status": 200, "message": "File shared successfully" });
-        }else if (type === 'folder'){
+        } else if (type === 'folder') {
 
             // validamos si la carpeta ya fue compartida
 
@@ -71,10 +71,10 @@ const shareItem = async (req, res) => {
             return res.status(200).json({ "status": 200, "message": "Folder shared successfully" });
         }
     }
-        catch (error) {
-            console.error("Error sharing the file:", error);
-            return res.status(500).json({ "status": 500, "message": "Error sharing the file" });
-        }
+    catch (error) {
+        console.error("Error sharing the file:", error);
+        return res.status(500).json({ "status": 500, "message": "Error sharing the file" });
+    }
 }
 
 const getSharedWithMeItems = async (req, res) => {
@@ -151,6 +151,35 @@ const getSharedWithMeItems = async (req, res) => {
 }
 
 
-export const shareItems = { shareItem 
-                            , getSharedWithMeItems
-                        };
+const showSharedIconInSideBar = async (req, res) => { // verifica si el usuario tiene archivos compartidos para mostrar el icono en el sidebar
+
+    const { idUsuario } = req.body;
+
+    if (!idUsuario) {
+        return res.status(400).json({ "status": 400, "message": "User ID is required" });
+    }
+
+    // validamos si el usuario tiene archivos compartidos con un COUNT
+    try {
+
+        const [sharedItems, fields] = await db.query(`SELECT COUNT(*) AS CANTIDAD FROM COMPARTIR WHERE ID_USUARIO_DESTINO = ?`, [idUsuario]);
+
+        if (sharedItems[0].CANTIDAD > 0) {
+            return res.status(200).json({ status: 200, icon: true });
+        } else {
+            return res.status(200).json({ status: 200, icon: false });
+        }
+
+    } catch (error) {
+        console.error("Error getting the shared items:", error);
+        return res.status(500).json({ "status": 500, "message": "Error getting the shared items" });
+    }
+}
+
+
+
+export const shareItems = {
+    shareItem, 
+    getSharedWithMeItems,
+    showSharedIconInSideBar
+};

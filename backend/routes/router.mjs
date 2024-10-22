@@ -66,6 +66,7 @@ router.post('/processDeleteRequest', processDeleteRequestUser.processDeleteReque
 /****** Share items *******/
 router.post('/shareItem', shareItems.shareItem);
 router.post('/getSharedWithMeItems', shareItems.getSharedWithMeItems);
+router.post('/showSharedIconInSideBar', shareItems.showSharedIconInSideBar);
 
 /******* Admin *******/
 router.get('/getAllAccounts', users.getAllAccounts)
