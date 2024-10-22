@@ -4,10 +4,12 @@ import FilesPage from "../pages/files/FilesPage";
 import Feedback from '@mui/icons-material/Feedback';  //icono para las solicitudes
 import AdminPage from "../pages/admin/AdminPage";
 import Profile from "../pages/profile/Profile";
+import FavoritosPage from "../pages/favoritos/FavoritosPage";
 import PapeleraPage from "../pages/papelera/PapeleraPage";
 import Requests from "../pages/requests/Requests";
 import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShareIcon from '@mui/icons-material/Share';
 import SharedFilesPage from "../pages/sharedFiles/SharedFilesPage";
@@ -74,6 +76,15 @@ const appRoutes = [
         sidebarProps: {
             displayText: "Requests",
             icon: <Feedback />
+        }
+    }
+    ,{
+        path: "/favorites",
+        element: <FavoritosPage />,
+        state: "Favorites",
+        sidebarProps: {
+            displayText: "Favorites",
+            icon: <FavoriteIcon />
         }
     }
     ,{

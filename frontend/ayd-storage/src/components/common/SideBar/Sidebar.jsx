@@ -10,6 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import StorageBar from "./StorageBar";
 import LogoutIcon from '@mui/icons-material/Logout';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
@@ -91,6 +92,16 @@ const Sidebar = () => {
         displayText: "Profile",
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    {
+      level: 0,
+      state: "Favorites",
+      path: "/favorites",
+      sidebarProps: {
+        icon: <FavoriteIcon />,
+        displayText: "Favoritos",
+      },
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado
     },
     {
       level: 0,

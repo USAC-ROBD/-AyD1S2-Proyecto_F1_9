@@ -1,9 +1,5 @@
 import db from "../utils/db_connection.mjs"
-import { uploadFileS3, downloadFileS3, deleteObjectS3 } from "../aws/s3.mjs";
-import os from 'os';
-import path from 'path';
-import fs from 'fs/promises';
-
+import { uploadFileS3, deleteObjectS3 } from "../aws/s3.mjs";
 
 const getRootFolder = async (req, res) => {
     try {
@@ -37,7 +33,7 @@ const getChildItems = async (req, res) => {
         const { idFolder } = req.body
 
         //retornamos los archivos y carpetas hijos de la carpeta
-        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
                                                 ,(  SELECT SUM(CANT)
                                                     FROM (
                                                         SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
@@ -49,7 +45,7 @@ const getChildItems = async (req, res) => {
                                                 WHERE ELIMINADO = 0 and CARPETA.ID_CARPETA_PADRE = ?
                                                 ORDER BY CARPETA.NOMBRE ASC`, [idFolder])
 
-        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
+        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
                                                     FROM ARCHIVO
                                                     WHERE ELIMINADO = 0 and ARCHIVO.ID_CARPETA = ?
                                                     ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder])
@@ -58,6 +54,7 @@ const getChildItems = async (req, res) => {
             return {
                 id: folder.ID_CARPETA,
                 name: folder.NOMBRE,
+                favorite: folder.FAVORITO,
                 type: 'folder',
                 created: folder.CREA,
                 modified: folder.MODIFICA,
@@ -71,6 +68,7 @@ const getChildItems = async (req, res) => {
             return {
                 id: file.ID_ARCHIVO,
                 name: file.NOMBRE,
+                favorite: file.FAVORITO,
                 type: 'file',
                 size: file.TAMANO_B,
                 key: file.KEY_S3,
@@ -436,6 +434,78 @@ const download = async (req, res) => {
     }
 }
 
+const getFavsItems = async (req, res) => {
+    try {
+        //sacamos los valores del json
+        const { idAccount, idFolder } = req.body
+
+        //retornamos los archivos y carpetas hijos de la carpeta
+        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
+                                                ,(  SELECT SUM(CANT)
+                                                    FROM (
+                                                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                                                        UNION 
+                                                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                                                        ) AS CHILDREN
+                                                ) AS CHILDREN
+                                                FROM CARPETA
+                                                WHERE ELIMINADO = 0 ${idFolder ? '' : 'and FAVORITO = 1'} and ${idFolder ? 'CARPETA.ID_CARPETA_PADRE = ?' : 'CARPETA.ID_CUENTA = ?'}
+                                                ORDER BY CARPETA.NOMBRE ASC`, [idFolder || idAccount])
+
+        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
+                                                    FROM ARCHIVO
+                                                        INNER JOIN CARPETA on ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                                                    WHERE ARCHIVO.ELIMINADO = 0 ${idFolder ? '' : 'and ARCHIVO.FAVORITO = 1'} and ${idFolder ? 'ARCHIVO.ID_CARPETA = ?' : 'CARPETA.ID_CUENTA = ?'}
+                                                    ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder || idAccount])
+
+        const folders = rows.map(folder => {
+            return {
+                id: folder.ID_CARPETA,
+                name: folder.NOMBRE,
+                favorite: folder.FAVORITO,
+                type: 'folder',
+                created: folder.CREA,
+                modified: folder.MODIFICA,
+                createdDate: folder.CREACION,
+                modifiedDate: folder.MODIFICACION,
+                children: folder.CHILDREN
+            }
+        });
+
+        const files = rows2.map(file => {
+            return {
+                id: file.ID_ARCHIVO,
+                name: file.NOMBRE,
+                favorite: file.FAVORITO,
+                type: 'file',
+                size: file.TAMANO_B,
+                key: file.KEY_S3,
+                created: file.CREA,
+                modified: file.MODIFICA,
+                createdDate: file.CREACION,
+                modifiedDate: file.MODIFICACION,
+            }
+        });
+
+        return res.status(200).json({ status: 200, children: [...folders, ...files] })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, message: 'Internal server error' })
+    }
+}
+
+const setFavItem = async (req, res) => {
+    try {
+        const { idItem, type } = req.body
+        const [rows] = await db.query(`SELECT FAVORITO FROM ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?`, [idItem])
+        const [item] = rows
+        await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET FAVORITO = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?`, [item.FAVORITO === 0 ? 1 : 0, idItem])
+        return res.status(200).json({ status: 200, icon: 'success', message: '', fav: item.FAVORITO === 0 ? 1 : 0 })
+    } catch(error) {
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 export const files = {
     getRootFolder,
     getChildItems,
@@ -447,4 +517,6 @@ export const files = {
     emptyTrash,
     rename,
     download,
+    getFavsItems,
+    setFavItem
 }
