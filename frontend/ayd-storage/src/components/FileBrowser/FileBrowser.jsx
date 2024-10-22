@@ -21,7 +21,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
 
-const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se pueden abrir carpetas
+const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
   const [currentFolderId, setCurrentFolderId] = useState(folder);
   const [currentFolder, setCurrentFolder] = useState([]);
@@ -36,10 +36,10 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
 
   // Inicializar la carpeta raíz
   useEffect(() => {
-    if (!esPapelera) {
+    if (!esPapelera && !esFavoritos) {
       setCurrentFolderId(folder);
     }
-  }, [esPapelera, folder]);
+  }, [esFavoritos, esPapelera, folder]);
 
   useEffect(() => {
     if (!esPapelera) {
@@ -49,6 +49,13 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
       const usuario = JSON.parse(localStorage.getItem('USUARIO'));
       fetchDeletedItems(usuario);
     }
+    if (esFavoritos) {
+      const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+      if (usuario) {
+        fetchFavItems(usuario.ID_CUENTA, currentFolderId);
+      }
+    }
+
   }, [currentFolderId]);
 
   const fetchChildItems = async (idFolder) => {
@@ -59,6 +66,25 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ idFolder })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          setCurrentFolder(data.children);
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  };
+
+  const fetchFavItems = async (idAccount, idFolder) => {
+    console.log(idAccount, idFolder);
+    if (!idAccount && !idFolder) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/getFavorites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idAccount, idFolder })
     })
       .then(response => response.json())
       .then(data => {
@@ -107,7 +133,8 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     setContextMenu({
       item,
       xPos: e.pageX,
-      yPos: e.pageY
+      yPos: e.pageY,
+      idFolder: currentFolderId
     });
     setVisible(true);
   };
@@ -332,7 +359,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         <Grid container spacing={1}>
           <Grid item size={{ xs: 12, md: 6, lg: 8 }}>
             <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
-              {esPapelera ? 'Recycling Bin' : 'Files'}
+              {esPapelera ? 'Recycling Bin' : esFavoritos ? 'Favorites' : 'Files'}
             </Typography>
           </Grid>
           <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
@@ -340,12 +367,12 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            {!esPapelera && (
+            {!esPapelera && !esFavoritos && (
               <FormUploadFile parentFolder={currentFolderId} onUploadFile={handleUploadFile} />
             )}
 
           </Grid>
-          {!esPapelera && (
+          {!esPapelera && !esFavoritos && (
             <Grid item size={{ xs: 12, md: 3, lg: 2 }} sx={{
               display: 'flex',
               justifyContent: 'center',
@@ -415,6 +442,7 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         activeDelete={activeDelete}
         activeRestore={activeRestore}
         esPapelera={esPapelera}
+        onSetFavItem={fetchFavItems}
       />
 
       {renameFile && (
