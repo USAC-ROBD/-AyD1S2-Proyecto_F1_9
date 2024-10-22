@@ -20,6 +20,7 @@ import FormCreateFolder from './FormCreateFolder';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
+import FormShare from './FormShare';
 
 const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
@@ -30,9 +31,12 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
   const [renameFile, setRenameFile] = useState(null);
   const [newName, setNewName] = useState('');
   const [visible, setVisible] = useState(false);
+  const [shareFile, setShareFile] = useState(null);
+  const [visibleFormShare, setVisibleFormShare] = useState(false);
 
   // const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
+  const formShareRef = useRef(null);
 
   // Inicializar la carpeta raíz
   useEffect(() => {
@@ -190,6 +194,12 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
     handleRestore(contextMenu.item)
     setContextMenu(null)
     setVisible(false)
+  }
+
+  const activeShare = () => {
+    setShareFile(contextMenu.item)
+    setVisible(false)
+    setVisibleFormShare(true)
   }
 
   const getFileIcon = (fileName) => {
@@ -414,7 +424,14 @@ const FileBrowser = ({ folder, esPapelera }) => { //si esta en la papelera no se
         activeRename={activeRename}
         activeDelete={activeDelete}
         activeRestore={activeRestore}
+        activeShare={activeShare}
         esPapelera={esPapelera}
+      />
+
+      <FormShare 
+        file={shareFile} 
+        visible={visibleFormShare} 
+        setVisible={setVisibleFormShare} 
       />
 
       {renameFile && (

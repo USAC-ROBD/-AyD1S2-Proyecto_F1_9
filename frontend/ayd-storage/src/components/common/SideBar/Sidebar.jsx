@@ -15,6 +15,8 @@ import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
 import Feedback from '@mui/icons-material/Feedback';  //icono para las solicitudes
 import { resetAction } from "../../../redux/features/storageBarSlice";
+import ShareIcon from '@mui/icons-material/Share';
+
 
 const Sidebar = () => {
   const actionTriggered = useSelector((state) => {
@@ -97,6 +99,17 @@ const Sidebar = () => {
       sidebarProps: {
         icon: <DeleteOutlineIcon />,
         displayText: "Recycling Bin",
+      },
+      userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+    },
+    ,
+    {
+      level: 0,
+      state: "shared-with-me",
+      path: "/shared-with-me",
+      sidebarProps: {
+        icon: <ShareIcon />,
+        displayText: "Shared with me",
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },
