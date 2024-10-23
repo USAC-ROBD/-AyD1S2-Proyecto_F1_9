@@ -217,6 +217,8 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     setCurrentFolder([...currentFolder, newFile]);
     // actualizar la barra de almacenamiento en el sidebar
     dispatch(triggerAction());
+
+    fetchChildItems(currentFolderId);
   }
 
   const handleCreateFolder = (folder) => {
