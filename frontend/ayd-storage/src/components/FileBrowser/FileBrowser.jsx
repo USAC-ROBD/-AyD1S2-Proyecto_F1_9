@@ -21,8 +21,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
 import FormShare from './FormShare';
-import { AccountCircle } from '@mui/icons-material';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import FormStopSharing from './FormStopSharing';
+import { Form } from 'react-router-dom';
+
 
 const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
@@ -35,6 +37,8 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
   const [visible, setVisible] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [visibleFormShare, setVisibleFormShare] = useState(false);
+  const [visibleContextStopShare, setVisibleContextStopShare] = useState(false); // Variable para mostrar/ocultar la opcion de dejar de compartir en el menu contextual
+  const [visibleFormStopShare, setVisibleFormStopShare] = useState(false);
 
   // const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
@@ -142,6 +146,7 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
       yPos: e.pageY,
       idFolder: currentFolderId
     });
+    setVisibleContextStopShare(item.shared > 0);
     setVisible(true);
   };
 
@@ -207,6 +212,10 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     setCurrentFolder([...currentFolder, newFolder]);
   }
 
+  const handleUpdateFiles = () => {
+    fetchChildItems(currentFolderId);
+  }
+
   const activeRename = () => {
     setNewName(contextMenu.item.name)
     setRenameFile(contextMenu.item)
@@ -229,6 +238,12 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     setShareFile(contextMenu.item)
     setVisible(false)
     setVisibleFormShare(true)
+  }
+
+  const activeStopShare = () => {
+    setVisibleFormStopShare(true)
+    setVisible(false)
+    setShareFile(contextMenu.item)
   }
 
   const getFileIcon = (fileName) => {
@@ -472,12 +487,22 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
         activeShare={activeShare}
         esPapelera={esPapelera}
         onSetFavItem={fetchFavItems}
+        activeStopShare={activeStopShare}
+        showStopShare={visibleContextStopShare}
       />
 
       <FormShare
         file={shareFile}
         visible={visibleFormShare}
         setVisible={setVisibleFormShare}
+        handleUpdateFiles={handleUpdateFiles}
+      />
+
+      <FormStopSharing
+        file={shareFile}
+        visible={visibleFormStopShare}
+        setVisible={setVisibleFormStopShare}
+        handleUpdateFiles={handleUpdateFiles}
       />
 
       {renameFile && (

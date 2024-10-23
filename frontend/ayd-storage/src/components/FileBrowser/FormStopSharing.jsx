@@ -1,4 +1,9 @@
 import * as React from 'react';
+import { useEffect } from 'react';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
@@ -20,41 +25,81 @@ const style = {
     p: 4,
 };
 
-export default function FormShare({ visible, setVisible, file, handleUpdateFiles }) {
-    const [userIdentifier, setUserIdentifier] = React.useState('');
+export default function FormStopSharing({ visible, setVisible, file, handleUpdateFiles }) {
+    const [user, setUser] = React.useState('');
+    const [users, setUsers] = React.useState([]);
+    const [selectedUser, setSelectedUser] = React.useState('');
     const [error, setError] = React.useState(null);
 
     const handleClose = () => {
         setVisible(false);
-        setUserIdentifier('');
+        setUser('');
+        setSelectedUser('');
         setError(null);
     }
 
-    const handleInputChange = (e) => {
-        setUserIdentifier(e.target.value);
+    const handleUserChange = (e) => {
+        setUser(e.target.value);
+        setSelectedUser(e.target.value);
+    }
+
+
+    useEffect(() => {
+        axiosGetUsers();
+    }, [file]);
+
+    const axiosGetUsers = async () => {
+        if(!file){
+            return;
+        }
+
+        const data = {
+            idItem: file.id,
+            type: file.type
+        }
+
+        axios.post(`${process.env.REACT_APP_API_HOST}/getUsersWithItemShared`, data)
+            .then(response => {
+                if (response.status === 200) {
+                    setUsers(response.data.users);
+                } else {
+                    if (response.data) {
+                        console.log(response.data.message);
+                    }
+                }
+
+            })
+            .catch(error => {
+                let message = "Error getting the users with whom the item has been shared";
+                if (error.response) {
+                    if (error.response.data) {
+                        message = error.response.data.message;
+                    }
+                }
+                console.error('Error getting the users with whom the item has been shared:', error);
+            });
     }
 
     const handleSubmit = async () => {
-        if (!userIdentifier) {
-            setError('Please enter an email/username');
+        if (!selectedUser) {
+            setError('Please enter the user to stop sharing the file with');
             return;
         }
 
         const currentUserId = JSON.parse(localStorage.getItem('USUARIO')).ID_USUARIO;
         const data = {
-            userIdentifier: userIdentifier,
-            idFile: file.id,
-            currentUserId: currentUserId,
-            type: file.type
+            idItem: file.id,
+            type: file.type,
+            idUser: selectedUser
         }
 
-        axios.post(`${process.env.REACT_APP_API_HOST}/shareItem`, data)
+        axios.post(`${process.env.REACT_APP_API_HOST}/stopSharing`, data)
             .then(response => {
                 console.log(response);
                 if (response.status === 200) {
-                    handleUpdateFiles();
                     setVisible(false);
-                    setUserIdentifier('');
+                    setUser('');
+                    setSelectedUser('');
                     setError(null);
                     Swal.fire({
                         icon: 'success',
@@ -62,14 +107,15 @@ export default function FormShare({ visible, setVisible, file, handleUpdateFiles
                         showConfirmButton: false,
                         timer: 2000
                     });
-                }else {
+                    handleUpdateFiles();
+                } else {
                     if (response.data) {
                         setError(response.data.message);
                     }
                 }
             })
             .catch(error => {
-                let message  =  "Error sharing the file";
+                let message = "Error sharing the file";
                 if (error.response) {
                     if (error.response.data) {
                         message = error.response.data.message;
@@ -78,7 +124,7 @@ export default function FormShare({ visible, setVisible, file, handleUpdateFiles
                 console.error('Error sharing the file:', error);
                 setError(message);
             });
-            
+
     }
 
     return (
@@ -92,44 +138,43 @@ export default function FormShare({ visible, setVisible, file, handleUpdateFiles
             >
                 <Box sx={style}>
                     <Typography variant="h4" component="h2" sx={{ mb: 2, color: 'white' }}>
-                        Share {file ? file.type : ''}
+                        Stop sharing {file ? file.type : ''}
                     </Typography>
 
                     <p
                         style={{ color: 'white' }}
-                    >Enter the email/username of the person you want to share the {file ? file.type : ''} with:</p>
+                    >Enter the email/username of the person you want to stop sharing the {file ? file.type : ''} with:</p>
 
-                    <TextField
-                        id="standard-basic"
-                        placeholder='Email/username'
-                        variant="outlined"
-                        color="primary"
-                        autoComplete='off'
-                        onChange={handleInputChange}
-                        sx={{
-                            mb: 2,
-                            width: '100%',
-                            transition: 'box-shadow 0.3s ease',
-                            '&:hover': {
-                                boxShadow: '0 0 10px white',
-                            },
-                            '& .MuiOutlinedInput-root': {
-                                color: '#fff', // Cambia el color del texto
-                                '& fieldset': {
-                                    borderColor: '#fff', // Cambia el color del borde
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: '#fff', // Cambia el color del borde al hacer hover
-                                },
-                            },
-                            '& .MuiInputLabel-root': {
-                                color: '#fff', // Cambia el color de la etiqueta
-                            },
-                            '& .MuiInputLabel-root.Mui-focused': {
-                                color: '#fff', // Mantén el color blanco cuando está enfocado
-                            }
-                        }}
-                    />
+                    <FormControl fullWidth sx={{ mt: 2, bgcolor: '#233044', borderRadius: 1, mb: 2 }}>
+                        <InputLabel sx={{ color: '#ccc' }}>User</InputLabel>
+                        <Select
+                            value={selectedUser}
+                            required
+                            onChange={handleUserChange}
+                            label="User"
+                            sx={{
+                                color: '#fff'
+                            }}
+                        >
+                            {users.map((user) => (
+                                <MenuItem
+                                    key={user.USUARIO}
+                                    value={user.ID_USUARIO}
+                                    sx={{
+                                        bgcolor: '#233044',
+                                        color: '#fff',
+                                        '&:hover': { bgcolor: '#2a3f60', color: '#fff', },
+                                        "&.Mui-selected": { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                        '&.Mui-selected:hover': { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                        '&.Mui-focusVisible': { bgcolor: '#2a3f60', color: '#fff', },
+                                        '&.Mui-focusVisible.Mui-selected': { bgcolor: 'rgb(20, 35, 62)', color: '#fff', },
+                                    }}
+                                >
+                                    {user.USUARIO} - {user.EMAIL}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
 
                     {error && (
                         <Typography variant="body2" sx={{ color: 'red', mb: 2 }}>
@@ -170,7 +215,7 @@ export default function FormShare({ visible, setVisible, file, handleUpdateFiles
                                 }}
                                 onClick={handleSubmit}
                             >
-                                Share
+                                Stop Sharing
                             </Button>
                         </Grid2>
                     </Grid2>

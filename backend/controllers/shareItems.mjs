@@ -183,9 +183,59 @@ const showSharedIconInSideBar = async (req, res) => { // verifica si el usuario 
 }
 
 
+const getUsersWithItemShared = async (req, res) => { //obtener los usuarios con los que se ha compartido un archivo
+
+    const { idItem, type } = req.body;
+
+    if (!idItem || !type) {
+        return res.status(400).json({ "status": 400, "message": "Item ID and type are required" });
+    }   
+
+    try {
+        if (type === 'file') {
+            const [users, fields] = await db.query(`SELECT u.ID_USUARIO, u.USUARIO, u.EMAIL FROM COMPARTIR c INNER JOIN USUARIO u ON c.ID_USUARIO_DESTINO = u.ID_USUARIO WHERE c.ID_ARCHIVO = ?`, [idItem]);
+
+            return res.status(200).json({ status: 200, users: users });
+        } else if (type === 'folder') {
+            const [users, fields] = await db.query(`SELECT u.ID_USUARIO, u.USUARIO, u.EMAIL FROM COMPARTIR c INNER JOIN USUARIO u ON c.ID_USUARIO_DESTINO = u.ID_USUARIO WHERE c.ID_CARPETA = ?`, [idItem]);
+            return res.status(200).json({ status: 200, users: users });
+        }
+    } catch (error) {
+        console.error("Error getting the users with whom the item has been shared:", error);
+        return res.status(500).json({ "status": 500, "message": "Error getting the users with whom the item has been shared" });
+    }
+
+}
+
+const stopSharingItem = async (req, res) => {
+
+    const { idItem, type, idUser } = req.body;
+
+    if (!idItem || !type || !idUser) {
+        return res.status(400).json({ "status": 400, "message": "Item ID, type and user ID are required" });
+    }
+
+    try {
+        if (type === 'file') {
+            await db.query(`DELETE FROM COMPARTIR WHERE ID_ARCHIVO = ? AND ID_USUARIO_DESTINO = ?`, [idItem, idUser]);
+            return res.status(200).json({ status: 200, message: "File unshared successfully" });
+        } else if (type === 'folder') {
+            await db.query(`DELETE FROM COMPARTIR WHERE ID_CARPETA = ? AND ID_USUARIO_DESTINO = ?`, [idItem, idUser]);
+            return res.status(200).json({ status: 200, message: "Folder unshared successfully" });
+        }
+    } catch (error) {
+        console.error("Error unsharing the item:", error);
+        return res.status(500).json({ "status": 500, "message": "Error unsharing the item" });
+    }
+        
+}
+
+
 
 export const shareItems = {
     shareItem, 
     getSharedWithMeItems,
-    showSharedIconInSideBar
+    showSharedIconInSideBar,
+    getUsersWithItemShared,
+    stopSharingItem
 };
