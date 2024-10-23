@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { React, useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2';
 
-export default function Options({ contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera, onSetFavItem }) {
+export default function Options({ contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera, activeShare, onSetFavItem, activeStopShare, showStopShare }) {
     const contextMenuRef = useRef(null);
 
     const handleDownload = async () => {
@@ -16,7 +16,7 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
 
         const data = await response.json()
 
-        if(response.ok) {
+        if (response.ok) {
             // const link = document.createElement('a');
             // link.href = `${process.env.REACT_APP_S3_URL}/${data.url}`;
             // link.setAttribute('download', contextMenu.item.name);
@@ -70,27 +70,27 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
     const fetchSetFavItem = async (idItem, type) => {
         if (!idItem || !type) return;
         fetch(`${process.env.REACT_APP_API_HOST}/setFavorite`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ idItem, type })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ idItem, type })
         })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === 200) {
-                const usuario = JSON.parse(localStorage.getItem('USUARIO'));
-                if (data.fav === 1) {
-                    Swal.fire('Added to favorites')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+                    if (data.fav === 1) {
+                        Swal.fire('Added to favorites')
+                    } else {
+                        Swal.fire('Removed from favorites')
+                        onSetFavItem(usuario.ID_CUENTA, contextMenu.idFolder);
+                    }
                 } else {
-                    Swal.fire('Removed from favorites')
-                    onSetFavItem(usuario.ID_CUENTA, contextMenu.idFolder);
+                    Swal.fire('Error', 'An error occurred', 'error');
                 }
-            } else {
-              Swal.fire('Error', 'An error occurred', 'error');
-            }
-          })
-          .catch(error => console.error('Error:', error));
+            })
+            .catch(error => console.error('Error:', error));
     };
 
     if (!visible) return null;
@@ -177,24 +177,64 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
 
             {!esPapelera && (
                 <Button
-                variant="text"
-                color="inherit"
-                sx={{
-                    p: 1,
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                    textTransform: 'none',
-                    color: '#ff6b6b', // Texto rojo claro para Delete
-                    '&:hover': {
-                        backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
-                    },
-                }}
-                onClick={activeDelete}
-            >
-                Delete
-            </Button>
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeShare}
+                >
+                    Share
+                </Button>
             )}
-            
+
+            {!esPapelera && showStopShare && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeStopShare}
+                >
+                    Stop sharing
+                </Button>
+            )}
+
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ff6b6b', // Texto rojo claro para Delete
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
+                        },
+                    }}
+                    onClick={activeDelete}
+                >
+                    Delete
+                </Button>
+            )}
+
 
             {esPapelera && (
                 <Button

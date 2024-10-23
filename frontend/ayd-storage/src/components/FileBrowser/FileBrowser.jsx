@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { triggerAction } from '../../redux/features/storageBarSlice';
-import { Box, Button, TextField, Typography, Container, IconButton } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, IconButton, Tooltip, Badge, } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
@@ -21,6 +21,11 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
 import FileModal from './FileModal';
+import FormShare from './FormShare';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import FormStopSharing from './FormStopSharing';
+import { Form } from 'react-router-dom';
+
 
 const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la papelera no se pueden abrir carpetas
   const dispatch = useDispatch();
@@ -33,9 +38,14 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
   const [visible, setVisible] = useState(false);
   const [fileContent, setFileContent] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [shareFile, setShareFile] = useState(null);
+  const [visibleFormShare, setVisibleFormShare] = useState(false);
+  const [visibleContextStopShare, setVisibleContextStopShare] = useState(false); // Variable para mostrar/ocultar la opcion de dejar de compartir en el menu contextual
+  const [visibleFormStopShare, setVisibleFormStopShare] = useState(false);
 
   // const contextMenuRef = useRef(null);
   const renameDialogRef = useRef(null);
+  const formShareRef = useRef(null);
 
   // Inicializar la carpeta raíz
   useEffect(() => {
@@ -154,6 +164,7 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
       yPos: e.pageY,
       idFolder: currentFolderId
     });
+    setVisibleContextStopShare(item.shared > 0);
     setVisible(true);
   };
 
@@ -169,8 +180,8 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
 
       const data = await response.json()
 
-      if(response.ok) {
-        if(data.icon === 'success') {
+      if (response.ok) {
+        if (data.icon === 'success') {
           renameFile.name = newName;
           setCurrentFolder([...currentFolder]);
           setRenameFile(null);
@@ -219,6 +230,10 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     setCurrentFolder([...currentFolder, newFolder]);
   }
 
+  const handleUpdateFiles = () => {
+    fetchChildItems(currentFolderId);
+  }
+
   const activeRename = () => {
     setNewName(contextMenu.item.name)
     setRenameFile(contextMenu.item)
@@ -235,6 +250,18 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     handleRestore(contextMenu.item)
     setContextMenu(null)
     setVisible(false)
+  }
+
+  const activeShare = () => {
+    setShareFile(contextMenu.item)
+    setVisible(false)
+    setVisibleFormShare(true)
+  }
+
+  const activeStopShare = () => {
+    setVisibleFormStopShare(true)
+    setVisible(false)
+    setShareFile(contextMenu.item)
   }
 
   const getFileIcon = (fileName) => {
@@ -437,10 +464,26 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
                 margin: '10px',
                 textAlign: 'center',
                 cursor: 'pointer',
+                position: 'relative',
                 minWidth: '100px',
                 maxWidth: '100px',
               }}
             >
+              {
+                (item.shared > 0) && (
+                  <Tooltip title={"You are sharing this item with " + item.shared + " users"} arrow>
+                    <Badge
+                      overlap="circular"
+                      badgeContent={<ShareOutlinedIcon sx={{ fontSize: 25 }} />}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      sx={{ position: 'absolute', top: '5px', right: '15px' }} // Adjust position
+                    />
+                  </Tooltip>
+                )
+              }
               <img
                 src={item.type === 'folder' ? (item.children > 0 ? folderImageFull : folderImageEmpty) : getFileIcon(item.name)}
                 alt={item.name}
@@ -464,8 +507,25 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
         activeRename={activeRename}
         activeDelete={activeDelete}
         activeRestore={activeRestore}
+        activeShare={activeShare}
         esPapelera={esPapelera}
         onSetFavItem={fetchFavItems}
+        activeStopShare={activeStopShare}
+        showStopShare={visibleContextStopShare}
+      />
+
+      <FormShare
+        file={shareFile}
+        visible={visibleFormShare}
+        setVisible={setVisibleFormShare}
+        handleUpdateFiles={handleUpdateFiles}
+      />
+
+      <FormStopSharing
+        file={shareFile}
+        visible={visibleFormStopShare}
+        setVisible={setVisibleFormStopShare}
+        handleUpdateFiles={handleUpdateFiles}
       />
 
       {renameFile && (

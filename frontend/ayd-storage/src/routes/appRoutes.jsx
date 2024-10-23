@@ -11,6 +11,8 @@ import FolderCopyRoundedIcon from '@mui/icons-material/FolderCopyRounded';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShareIcon from '@mui/icons-material/Share';
+import SharedFilesPage from "../pages/sharedFiles/SharedFilesPage";
 
 const appRoutes = [
     {
@@ -92,6 +94,14 @@ const appRoutes = [
         sidebarProps: {
             displayText: "Recycling Bioin",
             icon: <DeleteOutlineIcon />
+        }
+    },{
+        path: "/shared-with-me",
+        element: <SharedFilesPage />,
+        state: "shared-with-me",
+        sidebarProps: {
+            displayText: "Shared with me",
+            icon: <ShareIcon />
         }
     }
 ]

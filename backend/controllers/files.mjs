@@ -17,7 +17,7 @@ const getRootFolder = async (req, res) => {
                                                     AND CARPETA.ID_CARPETA_PADRE IS NULL 
                                                     AND CARPETA.ID_CUENTA = ?
                                                     AND CARPETA.NOMBRE =''`, [username, id_account])
-        
+
         if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Root folder not found' })
 
         return res.status(200).json({ status: 200, rootFolder: rows[0].ID_CARPETA })
@@ -33,22 +33,29 @@ const getChildItems = async (req, res) => {
         const { idFolder } = req.body
 
         //retornamos los archivos y carpetas hijos de la carpeta
-        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
-                                                ,(  SELECT SUM(CANT)
-                                                    FROM (
-                                                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
-                                                        UNION 
-                                                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
-                                                        ) AS CHILDREN
-                                                ) AS CHILDREN
-                                                FROM CARPETA
-                                                WHERE ELIMINADO = 0 and CARPETA.ID_CARPETA_PADRE = ?
-                                                ORDER BY CARPETA.NOMBRE ASC`, [idFolder])
+        const [rows, fields] = await db.query(` 
+            SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION,
+                   (SELECT SUM(CANT)
+                    FROM (
+                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                        UNION 
+                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                    ) AS CHILDREN
+                   ) AS CHILDREN,
+                   (SELECT COUNT(*) FROM COMPARTIR WHERE COMPARTIR.ID_CARPETA = CARPETA.ID_CARPETA AND TIPO_COMPARTIR = 2) AS TOTAL_COMPARTIDO
+            FROM CARPETA
+            WHERE ELIMINADO = 0 AND CARPETA.ID_CARPETA_PADRE = ?
+            ORDER BY CARPETA.NOMBRE ASC`, [idFolder]);
 
-        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
-                                                    FROM ARCHIVO
-                                                    WHERE ELIMINADO = 0 and ARCHIVO.ID_CARPETA = ?
-                                                    ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder])
+
+        const [rows2, fields2] = await db.query(`
+                SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION,
+                       (SELECT COUNT(*) FROM COMPARTIR WHERE COMPARTIR.ID_ARCHIVO = ARCHIVO.ID_ARCHIVO AND TIPO_COMPARTIR = 1) AS TOTAL_COMPARTIDO
+                FROM ARCHIVO
+                WHERE ELIMINADO = 0 AND ARCHIVO.ID_CARPETA = ?
+                ORDER BY ARCHIVO.NOMBRE ASC
+            `, [idFolder]);
+
 
         const folders = rows.map(folder => {
             return {
@@ -60,7 +67,8 @@ const getChildItems = async (req, res) => {
                 modified: folder.MODIFICA,
                 createdDate: folder.CREACION,
                 modifiedDate: folder.MODIFICACION,
-                children: folder.CHILDREN
+                children: folder.CHILDREN,
+                shared: folder.TOTAL_COMPARTIDO
             }
         });
 
@@ -76,6 +84,7 @@ const getChildItems = async (req, res) => {
                 modified: file.MODIFICA,
                 createdDate: file.CREACION,
                 modifiedDate: file.MODIFICACION,
+                shared: file.TOTAL_COMPARTIDO
             }
         });
 
@@ -331,7 +340,7 @@ const emptyTrash = async (req, res) => {
                 await db.query(`DELETE FROM ARCHIVO WHERE ID_ARCHIVO = ?`, [listItems[i].id])
             }
         }
-        
+
         return res.status(200).json({ status: 200, message: 'Trash emptied' })
     }
     catch (error) {
@@ -411,12 +420,12 @@ const rename = async (req, res) => {
             SELECT 1
             FROM ${type === 'file' ? 'ARCHIVO' : 'CARPETA'}
             WHERE NOMBRE = ? AND ${type === 'file' ? 'ID_CARPETA' : 'ID_CARPETA_PADRE'} = ?`, [newName, idPadre])
-        if(rows.length === 0) {
+        if (rows.length === 0) {
             await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET NOMBRE = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?;`, [newName, idRename])
             return res.status(200).json({ status: 200, icon: 'success', message: '' })
         }
         return res.status(202).json({ status: 202, icon: 'warning', message: `The ${type} named ${newName} already exists!` })
-    } catch(error) {
+    } catch (error) {
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
 }
@@ -428,7 +437,7 @@ const download = async (req, res) => {
         const [file] = rows
 
         return res.status(200).json({ status: 200, icon: 'success', message: '', url: file.KEY_S3 })
-    } catch(error) {
+    } catch (error) {
         console.log(error)
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
@@ -501,7 +510,7 @@ const setFavItem = async (req, res) => {
         const [item] = rows
         await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET FAVORITO = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?`, [item.FAVORITO === 0 ? 1 : 0, idItem])
         return res.status(200).json({ status: 200, icon: 'success', message: '', fav: item.FAVORITO === 0 ? 1 : 0 })
-    } catch(error) {
+    } catch (error) {
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
 }

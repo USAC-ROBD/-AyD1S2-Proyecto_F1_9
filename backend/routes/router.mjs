@@ -12,6 +12,7 @@ import {registerDeleteAccountRequestUser} from '../controllers/registerDeleteAcc
 import {getRequestsUser} from '../controllers/getRequests.mjs';
 import { processChangeStorageRequestUser } from '../controllers/processChangeStorageRequest.mjs';
 import { processDeleteRequestUser } from '../controllers/processDeleteRequest.mjs';
+import { shareItems } from '../controllers/shareItems.mjs';
 
 
 const router = Router();
@@ -62,8 +63,12 @@ router.get('/getRequests', getRequestsUser.getRequests);
 router.post('/processChangeStorageRequest', processChangeStorageRequestUser.processChangeStorageRequest);
 router.post('/processDeleteRequest', processDeleteRequestUser.processDeleteRequest);    
 
-
-
+/****** Share items *******/
+router.post('/shareItem', shareItems.shareItem);
+router.post('/getSharedWithMeItems', shareItems.getSharedWithMeItems);
+router.post('/showSharedIconInSideBar', shareItems.showSharedIconInSideBar);
+router.post('/getUsersWithItemShared', shareItems.getUsersWithItemShared);
+router.post('/stopSharing', shareItems.stopSharingItem);
 
 /******* Admin *******/
 router.get('/getAllAccounts', users.getAllAccounts)
