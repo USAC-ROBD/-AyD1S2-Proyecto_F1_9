@@ -20,6 +20,7 @@ import FormCreateFolder from './FormCreateFolder';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
+import FileModal from './FileModal';
 import FormShare from './FormShare';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import FormStopSharing from './FormStopSharing';
@@ -35,6 +36,8 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
   const [renameFile, setRenameFile] = useState(null);
   const [newName, setNewName] = useState('');
   const [visible, setVisible] = useState(false);
+  const [fileContent, setFileContent] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [visibleFormShare, setVisibleFormShare] = useState(false);
   const [visibleContextStopShare, setVisibleContextStopShare] = useState(false); // Variable para mostrar/ocultar la opcion de dejar de compartir en el menu contextual
@@ -136,6 +139,21 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
       setCurrentFolderId(previousFolder);
       setHistory([...history]);
     }
+  };
+
+  const handleDoubleClick = (file) => {
+    if (file.type === 'folder') {
+      enterFolder(file.id)
+    } else {
+      // console.log(file)
+      console.log(file);
+      setFileContent(file);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   const handleContextMenu = (e, item) => {
@@ -440,7 +458,7 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
           {currentFolder.map((item, index) => (
             <Box
               key={index}
-              onDoubleClick={() => item.type === 'folder' && enterFolder(item.id)}
+              onDoubleClick={() => handleDoubleClick(item)}
               onContextMenu={(e) => handleContextMenu(e, item)}
               sx={{
                 margin: '10px',
@@ -475,6 +493,11 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
             </Box>
           ))}
         </Box>
+        <FileModal
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          fileContent={fileContent}
+        />
       </Box>
 
       <ContextMenu
