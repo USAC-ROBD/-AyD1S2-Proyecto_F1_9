@@ -1,4 +1,5 @@
 import db from "../utils/db_connection.mjs"
+import {transporter, shareMail} from "../email/nodemailer.mjs"
 
 
 const shareItem = async (req, res) => {
@@ -54,6 +55,9 @@ const shareItem = async (req, res) => {
 
             await db.query("INSERT INTO COMPARTIR (ID_USUARIO_PROPIETARIO, ID_USUARIO_DESTINO, TIPO_COMPARTIR, ID_ARCHIVO, ID_CARPETA, FECHA_COMPARTIR) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)", [currentUserId, dataDestinationUser[0].ID_USUARIO, 1, idFile, null]);
 
+            //enviar email al usuario destino
+            sendEmail(dataDestinationUser[0].EMAIL, dataCurrentUser[0].USUARIO, dataDestinationUser[0].USUARIO, dataFile[0].NOMBRE);
+
             return res.status(200).json({ "status": 200, "message": "File shared successfully" });
         } else if (type === 'folder') {
 
@@ -73,6 +77,10 @@ const shareItem = async (req, res) => {
             const [dataFolder, fields4] = folder
 
             await db.query("INSERT INTO COMPARTIR (ID_USUARIO_PROPIETARIO, ID_USUARIO_DESTINO, TIPO_COMPARTIR, ID_ARCHIVO, ID_CARPETA, FECHA_COMPARTIR) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)", [currentUserId, dataDestinationUser[0].ID_USUARIO, 2, null, idFile]);
+
+            //enviar email al usuario destino
+
+            sendEmail(dataDestinationUser[0].EMAIL, dataCurrentUser[0].USUARIO, dataDestinationUser[0].USUARIO, dataFolder[0].NOMBRE);
 
             return res.status(200).json({ "status": 200, "message": "Folder shared successfully" });
         }
@@ -230,7 +238,15 @@ const stopSharingItem = async (req, res) => {
         
 }
 
-
+const sendEmail = async (email, owner, destinationUser, item) => { //enviar email para notificar que se ha compartido un archivo
+    
+        try {
+            const mailOptions = shareMail(email, owner, destinationUser, item);
+            await transporter.sendMail(mailOptions);
+        } catch (error) {
+            console.error("Error sending the email:", error);
+        }
+}
 
 export const shareItems = {
     shareItem, 
