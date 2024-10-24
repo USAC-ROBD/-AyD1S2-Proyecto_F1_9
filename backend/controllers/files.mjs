@@ -483,6 +483,59 @@ const getFiles = async (idFolder) => { //funcion para obtener los archivos y car
     }
 }
 
+const getDetails = async (req, res) => {
+    try {
+        const { parentID, objectID, type } = req.query
+
+        console.log({ parentID, objectID, type })
+
+        const [ rows1 ] = await db.query(
+        `WITH RECURSIVE CarpetaPath AS (
+            SELECT 
+                ID_CARPETA, 
+                NOMBRE, 
+                ID_CARPETA_PADRE,
+                NOMBRE AS path
+            FROM 
+                CARPETA
+            WHERE 
+                ID_CARPETA = ${parentID}
+
+            UNION ALL
+
+            SELECT 
+                c.ID_CARPETA, 
+                c.NOMBRE, 
+                c.ID_CARPETA_PADRE,
+                CONCAT(c.NOMBRE, '/', cp.path) AS path
+            FROM 
+                CARPETA c
+            INNER JOIN 
+                CarpetaPath cp 
+            ON 
+                c.ID_CARPETA = cp.ID_CARPETA_PADRE
+        )
+        SELECT path AS full_path
+        FROM CarpetaPath
+        WHERE ID_CARPETA_PADRE IS NULL;`)
+
+        const [ rows2 ] = await db.query(
+            type == 0 ?
+            `SELECT 'Folder' AS TIPO, NOMBRE, CREACION, MODIFICACION FROM CARPETA
+            WHERE ID_CARPETA = ${objectID}`
+            :
+            `SELECT 'File' AS TIPO, NOMBRE, CREACION, MODIFICACION, TAMANO_B FROM ARCHIVO
+            WHERE ID_ARCHIVO = ${objectID}`
+        )
+        rows2[0].PATH = rows1[0].full_path.length > 0 ? rows1[0].full_path : '/'
+
+        return res.status(200).json({ status: 200, icon: 'success', details: rows2[0] })
+    } catch(error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 const rename = async (req, res) => {
     try {
         const { idRename, idPadre, newName, type } = req.body
@@ -601,4 +654,5 @@ export const files = {
     setFavItem,
     addFolderTags,
     getFolderTags,
+    getDetails,
 }

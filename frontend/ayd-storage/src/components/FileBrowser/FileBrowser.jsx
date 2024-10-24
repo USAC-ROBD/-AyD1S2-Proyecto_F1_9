@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { triggerAction } from '../../redux/features/storageBarSlice';
-import { Box, Button, TextField, Typography, Container, IconButton, Tooltip, Badge, Chip, Stack } from '@mui/material';
+import { Box, Button, TextField, Typography, Container, IconButton, Tooltip, Badge, Chip } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import CloseIcon from '@mui/icons-material/Close'; // Importa el icono de cerrar
 import folderImageEmpty from '../../assets/images/carpeta-vacia.png';
@@ -21,11 +21,10 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import ContextMenu from './Options';
 import FileModal from './FileModal';
+import Details from './Details';
 import FormShare from './FormShare';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import FormStopSharing from './FormStopSharing';
-import { Form } from 'react-router-dom';
-
 
 const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la papelera no se pueden abrir carpetas
     const dispatch = useDispatch();
@@ -44,6 +43,7 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
     const [visibleFormShare, setVisibleFormShare] = useState(false);
     const [visibleContextStopShare, setVisibleContextStopShare] = useState(false); // Variable para mostrar/ocultar la opcion de dejar de compartir en el menu contextual
     const [visibleFormStopShare, setVisibleFormStopShare] = useState(false);
+    const [visibleDetails, setVisibleDetails] = useState(false);
 
     // const contextMenuRef = useRef(null);
     const renameDialogRef = useRef(null);
@@ -69,7 +69,7 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
                 fetchFavItems(usuario.ID_CUENTA, currentFolderId);
             }
         }
-    }, [currentFolderId]);
+    }, [esPapelera, esFavoritos, currentFolderId]);
 
     const fetchChildItems = async (idFolder) => {
         if (!idFolder) return;
@@ -152,9 +152,9 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
         }
     };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
 
     const handleContextMenu = (e, item) => {
         e.preventDefault();
@@ -299,9 +299,19 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
         setVisible(false)
     }
 
+    const [ details, setDetails ] = useState(null)
+
+    const handleGetDetails = async () => {
+        const { id, type } = contextMenu.item
+        const response = await fetch(`${process.env.REACT_APP_API_HOST}/getDetails?parentID=${currentFolderId}&objectID=${id}&type=${type === 'folder' ? 0 : 1}`)
+        const data = await response.json()
+        const { details } = data
+        setDetails(details)
+    }
+
     const activeDetails = () => {
-        // setNewName(contextMenu.item.name)
-        // setRenameFile(contextMenu.item)
+        handleGetDetails()
+        setVisibleDetails(true)
         setVisible(false)
     }
 
@@ -580,6 +590,12 @@ const FileBrowser = ({ folder, esPapelera, esFavoritos }) => { //si esta en la p
                 onSetFavItem={fetchFavItems}
                 activeStopShare={activeStopShare}
                 showStopShare={visibleContextStopShare}
+            />
+
+            <Details
+                details={details}
+                visible={visibleDetails}
+                setVisible={setVisibleDetails}
             />
 
             <FormShare
