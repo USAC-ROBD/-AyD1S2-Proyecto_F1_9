@@ -2,7 +2,7 @@ import { React, useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2';
 
-export default function Options({ contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera, activeShare, onSetFavItem, activeStopShare, showStopShare }) {
+export default function Options({ contextMenu, visible, setVisible, activeRename, activeDetails, activeAddTags, activeDelete, activeRestore, esPapelera, activeShare, onSetFavItem, activeStopShare, showStopShare }) {
     const contextMenuRef = useRef(null);
 
     const handleDownload = async () => {
@@ -16,14 +16,7 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
 
         const data = await response.json()
 
-        if (response.ok) {
-            // const link = document.createElement('a');
-            // link.href = `${process.env.REACT_APP_S3_URL}/${data.url}`;
-            // link.setAttribute('download', contextMenu.item.name);
-            // document.body.appendChild(link);
-            // link.click();
-            // document.body.removeChild(link);
-
+        if(response.ok) {
             try {
                 const response = await fetch(`${process.env.REACT_APP_S3_URL}/${data.url}`);
                 const blob = await response.blob();
@@ -138,6 +131,45 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
                 </Button>
             )}
 
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeDetails}
+                >
+                    Details
+                </Button>
+            )}
+
+            {contextMenu.item.type !== 'file' && !esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeAddTags}
+                >
+                    Tags
+                </Button>
+            )}
 
             {contextMenu.item.type === 'file' && !esPapelera && <Button
                 variant="text"
