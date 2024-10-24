@@ -51,6 +51,7 @@ router.post('/getFavorites', files.getFavsItems);
 router.post('/setFavorite', files.setFavItem);
 router.post('/addFolderTags', files.addFolderTags);
 router.get('/getFolderTags', files.getFolderTags);
+router.get('/getDetails', files.getDetails);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
