@@ -212,6 +212,77 @@ const createFolder = async (req, res) => {
     }
 }
 
+const addFolderTags = async (req, res) => {
+    try {
+        const { folderID, tags, deleteds } = req.body
+
+        let query = ''
+
+        for(const tag of tags) {
+            query += (query !== '' ? '\n\tUNION' : '') + `\n\tSELECT '${tag}' WHERE NOT EXISTS (SELECT 1 FROM ETIQUETA WHERE NOMBRE = '${tag}')`
+        }
+
+        await db.query(`INSERT INTO ETIQUETA (NOMBRE) ${query}`)
+
+        query = ''
+        for(const tag of tags) {
+            query += (query !== '' ? ' OR ' : '') + `NOMBRE = '${tag}'`
+        }
+
+        const [tagIDs] = await db.query(`SELECT ID_ETIQUETA FROM ETIQUETA WHERE ${query}`)
+
+        query = ''
+        for(const tagID of tagIDs) {
+            query += (query !== '' ? '\n\tUNION' : '') + `\n\tSELECT ${folderID}, ${tagID.ID_ETIQUETA} WHERE NOT EXISTS (SELECT 1 FROM CARPETA_ETIQUETA WHERE ID_CARPETA = '${folderID}' AND ID_ETIQUETA = '${tagID.ID_ETIQUETA}')`
+        }
+
+        await db.query(`INSERT INTO CARPETA_ETIQUETA (ID_CARPETA, ID_ETIQUETA) ${query}`)
+
+        if(deleteds.length > 0) {
+            query = ''
+            for(const tag of deleteds) {
+                query += (query !== '' ? ' OR ' : '') + `NOMBRE = '${tag}'`
+            }
+
+            const [tagIDs] = await db.query(`SELECT ID_ETIQUETA FROM ETIQUETA WHERE ${query}`)
+
+            query = ''
+            for(const id of tagIDs) {
+                query += (query !== '' ? ' OR ' : '') + `(ID_CARPETA = ${folderID} AND ID_ETIQUETA = ${id.ID_ETIQUETA})`
+            }
+
+            await db.query(`DELETE FROM CARPETA_ETIQUETA WHERE ${query}`)
+        }
+
+        return res.status(200).json({ status: 200, icon: 'success'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error'})
+    }
+}
+
+const getFolderTags = async (req, res) => {
+    try {
+
+        const { folderID } = req.query
+
+        let [ tags ] = await db.query(`
+        SELECT NOMBRE FROM ETIQUETA e1 WHERE e1.ID_ETIQUETA IN (
+            SELECT e2.ID_ETIQUETA FROM CARPETA_ETIQUETA e2 WHERE
+            e2.ID_CARPETA = ${folderID}
+        )`)
+
+        for(let i = 0; i < tags.length; i ++) {
+            tags[i] = tags[i].NOMBRE
+        }
+
+        return res.status(200).json({ status: 200, icon: 'success', tags })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 const deleteFile = async (req, res) => {
     try {
         //sacamos los valores del json
@@ -447,4 +518,6 @@ export const files = {
     emptyTrash,
     rename,
     download,
+    addFolderTags,
+    getFolderTags,
 }

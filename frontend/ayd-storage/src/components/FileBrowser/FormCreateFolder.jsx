@@ -119,9 +119,6 @@ export default function FormCreateFolder({ parentFolder, onCreateFolder }) {
                             mb: 2,
                             width: '100%',
                             transition: 'box-shadow 0.3s ease',
-                            '&:hover': {
-                                boxShadow: '0 0 10px white',
-                            },
                             '& .MuiOutlinedInput-root': {
                                 color: '#fff', // Cambia el color del texto
                                 '& fieldset': {

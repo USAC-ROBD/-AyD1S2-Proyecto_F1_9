@@ -46,6 +46,8 @@ router.post('/deleteFile', files.deleteFile);
 router.post('/getDeletedFiles', files.getDeletedItems);
 router.post('/restoreFile', files.restoreFile);
 router.post('/emptyTrash', files.emptyTrash);
+router.post('/addFolderTags', files.addFolderTags);
+router.get('/getFolderTags', files.getFolderTags);
 
 /***** Storage user ******/
 router.post('/getCurrentStorage', getCurrentStorageUser.getCurrentStorage);
