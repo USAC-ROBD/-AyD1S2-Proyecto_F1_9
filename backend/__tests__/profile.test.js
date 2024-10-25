@@ -1,5 +1,5 @@
 import request from 'supertest'
-import app from '../server.mjs'
+import app from '../index.test.mjs'
 
 test('POST /uploadProfile, debe retornar un atributo status=200, icon, message', async () => {
     const res = await request(app).post('/uploadProfile').send({ ID_USUARIO: 2, changes: {NOMBRE: 'Steven', APELLIDO: 'Gonzalez'}})

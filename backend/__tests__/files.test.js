@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../server.mjs'; // Puedes seguir usando import para tus módulos
+import app from '../index.test.mjs'; // Puedes seguir usando import para tus módulos
 
  test('POST /uploadFile, debe retornar un atributo status=200, file', async () => {
    const res = await request(app).post('/uploadFile').send({
