@@ -1,0 +1,13 @@
+# Ignorar dependencias instaladas
+node_modules
+
+# Ignorar archivos de pruebas
+**/*.test.mjs
+**/*.spec.mjs
+__tests__/
+
+# Ignorar archivos de configuración y caché
+.env
+npm-debug.log
+yarn-debug.log
+yarn-error.log

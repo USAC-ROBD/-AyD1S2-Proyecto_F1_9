@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../server.mjs';
+import app from '../index.test.mjs';
 
 describe('Share items tests', () => {
   
