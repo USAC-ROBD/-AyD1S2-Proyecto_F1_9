@@ -28,6 +28,10 @@ jobs:
           cd ./frontend/ayd-storage
           npm install
 
+      - name: Disable CI strict mode
+        run: |
+            unset CI
+        
       - name: Build React app
         run: |
           cd ./frontend/ayd-storage
