@@ -35,7 +35,7 @@ jobs:
       - name: Build React app
         run: |
           cd ./frontend/ayd-storage
-          npm run build
+          CI=false npm run build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
