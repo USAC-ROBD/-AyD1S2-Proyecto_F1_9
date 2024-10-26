@@ -183,6 +183,51 @@
   - **Métricas**:
     - Tiempo medio para enviar una notificación de compartición: < 1 minuto.
     - Porcentaje de notificaciones enviadas exitosamente: 100%.
+
+- **RF019**: Etiquetado de Archivos Compartidos
+  - **Descripción**: Los archivos y carpetas compartidos con el usuario serán etiquetados para indicar que están en compartición.
+  - **Métricas**:
+    - Tiempo medio para etiquetar elementos compartidos: < 1 minuto.
+    - Porcentaje de etiquetado exitoso: 100%.
+---
+#### 7. Gestión de Archivos y Carpetas (Extensión)
+
+- **RF020**: Agregar Tags Personalizados a Carpetas
+  - **Descripción**: Los usuarios podrán agregar etiquetas personalizadas a las carpetas, lo cual ayuda a identificar rápidamente el contenido o características especiales de la carpeta.
+  - **Métricas**:
+    - Tiempo medio para agregar una etiqueta: < 1 minuto.
+    - Porcentaje de etiquetado exitoso: 100%.
+
+- **RF021**: Detalles de Carpetas y Archivos
+  - **Descripción**: Los usuarios podrán visualizar detalles de cada carpeta o archivo, tales como fecha de creación, última modificación y tamaño ocupado.
+  - **Métricas**:
+    - Tiempo medio para mostrar detalles: < 1 minuto.
+    - Porcentaje de visualización de detalles exitoso: 100%.
+
+- **RF022**: Archivos y Carpetas Recientes
+  - **Descripción**: Se mostrará una sección de "Recientes" que listará los archivos y carpetas con los que se ha interactuado recientemente.
+  - **Métricas**:
+    - Tiempo medio para actualizar la lista de recientes: < 1 minuto.
+    - Porcentaje de visualización de elementos recientes: 100%.
+
+- **RF023**: Previsualización de Archivos
+  - **Descripción**: Los usuarios podrán previsualizar archivos en formatos PDF, imágenes, música y videos.
+  - **Métricas**:
+    - Tiempo medio para cargar una previsualización: < 2 segundos.
+    - Porcentaje de previsualizaciones exitosas: 99.9%.
+
+- **RF024**: Favoritos
+  - **Descripción**: Los usuarios podrán agregar archivos y carpetas a una lista de favoritos para acceso rápido.
+  - **Métricas**:
+    - Tiempo medio para agregar un elemento a favoritos: < 3 segundos.
+    - Porcentaje de elementos añadidos exitosamente a favoritos: 100%.
+
+- **RF025**: Backup Cifrado
+  - **Descripción**: Los usuarios podrán crear un backup cifrado de sus archivos para mayor seguridad.
+  - **Métricas**:
+    - Tiempo medio para crear un backup cifrado: < 10 minutos.
+    - Porcentaje de backups exitosos: 100%.
+
 ---
 ### Requerimientos No Funcionales
 **Descripción:**  
@@ -218,4 +263,5 @@ Lista de requerimientos no funcionales del sistema, tales como seguridad, rendim
 •	El sistema debe enviar notificaciones por correo electrónico para acciones importantes (confirmación de cuenta, eliminación de cuenta, etc.).
 #### Localización: 
 •	El sistema debe manejar información de usuarios de diferentes países y nacionalidades.
-
+#### Previsualización Segura:
+•	La previsualización de archivos debe asegurar que no se comprometan los datos del usuario.
