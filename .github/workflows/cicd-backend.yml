@@ -1,0 +1,73 @@
+name: CI/CD Pipeline backend
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Set environment variables
+        run: |
+            cd ./backend
+            echo "HOST=${{ secrets.HOST }}" >> .env
+            echo "PORT=${{ secrets.PORT }}" >> .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            echo "ACCESS_KEY_ID=${{ secrets.ACCESS_KEY_ID }}" >> .env
+            echo "SECRET_ACCESS_KEY=${{ secrets.SECRET_ACCESS_KEY }}" >> .env
+            echo "REGION=${{ secrets.REGION }}" >> .env
+            echo "BUCKET=${{ secrets.BUCKET }}" >> .env
+            echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> .env
+            echo "EMAIL_ORIGIN=${{ secrets.EMAIL_ORIGIN }}" >> .env
+            echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+            echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+            echo "REACT_APP_API_HOST=${{ secrets.REACT_APP_API_HOST }}" >> .env
+
+      - name: Install dependencies
+        run: |
+              cd ./backend
+              npm install
+
+      - name: Run tests
+        run: |
+              cd ./backend
+              npm test
+
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+              cd ./backend
+              docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest .
+              docker push ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Run deployment script via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest
+            docker stop backend-ayd-container || true
+            docker rm backend-ayd-container || true
+            docker run -d --name backend-ayd-container --env-file /home/ubuntu/ayd/AyD1S2-Proyecto_F1_9/backend/.env -p ${{ secrets.PORT }}:4000 ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest

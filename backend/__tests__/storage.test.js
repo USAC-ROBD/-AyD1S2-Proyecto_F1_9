@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../server.mjs'; // Puedes seguir usando import para tus módulos
+import app from '../index.test.mjs'; // Puedes seguir usando import para tus módulos
 
 test('POST /getStorage debería devolver un json con los tributos status:200, used, total', async () => {
   const res = await request(app).post('/getStorage').send({ username: 'test' });
