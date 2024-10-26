@@ -1,0 +1,61 @@
+name: CI/CD Pipeline frontend
+
+on:
+    pull_request:
+      branches:
+        - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Set environment variables
+        run: |
+              cd ./frontend/ayd-storage
+              echo "REACT_APP_API_HOST=${{ secrets.REACT_APP_API_HOST }}" >> .env
+              echo "REACT_APP_S3_URL=${{ secrets.REACT_APP_S3_URL }}" >> .env
+
+      - name: Install dependencies
+        run: |
+          cd ./frontend/ayd-storage
+          npm install
+
+      - name: Build React app
+        run: |
+          cd ./frontend/ayd-storage
+          npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: react-build-ayd-storage
+          path: ./frontend/ayd-storage/build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: react-build-ayd-storage
+          path: ./build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.REGION }}
+
+      - name: Sync build folder to S3
+        run: |
+          aws s3 sync ./build s3://${{ secrets.BUCKET }} --delete
