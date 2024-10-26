@@ -237,18 +237,33 @@ Incluir un diagrama de despliegue que detalle la infraestructura en la que se ej
 
 - **Login**
   ![1729904782961](images/README/1729904782961.png)
+
 - **Registro**
   ![1729904803194](images/README/1729904803194.png)
+
 - **Inicio de Administrador**
-  ![Admin](https://hackmd.io/_uploads/HkBJRnj3C.png)
+  ![Admin](./assets/mockup-inicio-admin.png)
+
 - **Inicio de Usuario**
-  ![image](https://hackmd.io/_uploads/Bkam2hsnA.png)
+  ![image](./assets/mockup-inicio-cliente.png)
+
+- **Profile**
+![image](./assets/mockup-profile.png)
+
+- **Trash**
+![image](./assets/mockup-papelera.png)
+
+- **Favoritos**
+![image](./assets/mockup-favoritos.png)
+
+- **Compartido Conmigo**
+![image](./assets/mockup-shared.png)
 
 ## Documentación de Pipelines
 
 **Pipelines para los Servicios:**
 
-  # CI/CD Pipeline for Backend
+  ## 1. CI/CD Pipeline for Backend
 
 Este pipeline está diseñado para realizar las tareas de integración continua y despliegue de un proyecto backend. A continuación se describen los pasos y configuraciones implementadas.
 
@@ -354,7 +369,7 @@ Este pipeline está diseñado para realizar las tareas de integración continua 
 
 
 
-# CI/CD Pipeline for Frontend
+## 2. CI/CD Pipeline for Frontend
 
 Este pipeline se encarga de realizar las tareas de integración continua y despliegue para el proyecto frontend, específicamente para una aplicación React. A continuación se detallan los pasos y configuraciones.
 
