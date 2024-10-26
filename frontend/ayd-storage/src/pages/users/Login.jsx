@@ -89,7 +89,7 @@ export default function Login() {
             }}
         >
             <Typography component="h1" variant="h5" sx={{ color: '#fff', mb: 2 }}>
-                Login
+                Calificación
             </Typography>
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                 <TextField
