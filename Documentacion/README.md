@@ -68,6 +68,10 @@ Git Flow es una metodología de ramificación estructurada y utilizada principal
 
 <div align="center"><img src="./assets/GitFlowPF1.png"/></div>
 
+### Diagrama de branching al finalizar Fase 2:
+
+<div align="center"><img src="./assets/gitflow-f2.png"/></div>
+
 ## Toma de Requerimientos
 
 [Requerimientos](Requerimientos.md)
@@ -210,7 +214,7 @@ Incluir un diagrama de despliegue que detalle la infraestructura en la que se ej
 ## Modelo de Datos
 
 **Modelo Entidad-Relación:**
-![Modelo_Relacional](https://hackmd.io/_uploads/ByOBVwYhR.png)
+![Modelo_Relacional](./assets/er-f2.png)
 
 ## Seguridad de la Aplicación
 
@@ -244,4 +248,207 @@ Incluir un diagrama de despliegue que detalle la infraestructura en la que se ej
 
 **Pipelines para los Servicios:**
 
-- Pendiente para la Fase 2
+  # CI/CD Pipeline for Backend
+
+Este pipeline está diseñado para realizar las tareas de integración continua y despliegue de un proyecto backend. A continuación se describen los pasos y configuraciones implementadas.
+
+## Pipeline Configuration
+
+- **Nombre**: `CI/CD Pipeline backend`
+- **Trigger**: Se ejecuta en los pull requests hacia la rama `main`.
+
+## Jobs
+
+### 1. Build
+
+  - **Runs-on**: `ubuntu-latest`
+  - **Steps**:
+    - **Checkout code**  
+      - Usa: `actions/checkout@v3`
+      - Descripción: Clona el repositorio en la máquina virtual.
+
+    - **Set up Node.js 18.x**  
+      - Usa: `actions/setup-node@v3`
+      - Configuración: `node-version: '18'`
+      - Descripción: Instala y configura Node.js versión 18.x.
+
+  - **Set environment variables**  
+    - Script:
+      ```bash
+      cd ./backend
+      echo "HOST=${{ secrets.HOST }}" >> .env
+      echo "PORT=${{ secrets.PORT }}" >> .env
+      echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+      echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+      echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+      echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+      echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+      echo "ACCESS_KEY_ID=${{ secrets.ACCESS_KEY_ID }}" >> .env
+      echo "SECRET_ACCESS_KEY=${{ secrets.SECRET_ACCESS_KEY }}" >> .env
+      echo "REGION=${{ secrets.REGION }}" >> .env
+      echo "BUCKET=${{ secrets.BUCKET }}" >> .env
+      echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> .env
+      echo "EMAIL_ORIGIN=${{ secrets.EMAIL_ORIGIN }}" >> .env
+      echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+      echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+      echo "REACT_APP_API_HOST=${{ secrets.REACT_APP_API_HOST }}" >> .env
+      ```
+    - Descripción: Configura las variables de entorno en el archivo `.env` usando los secretos de GitHub.
+
+  - **Install dependencies**  
+    - Script:
+      ```bash
+      cd ./backend
+      npm install
+      ```
+    - Descripción: Instala las dependencias necesarias del proyecto backend.
+
+  - **Run tests**  
+    - Script:
+      ```bash
+      cd ./backend
+      npm test
+      ```
+    - Descripción: Ejecuta los tests del proyecto para verificar que todo funcione correctamente.
+
+  - **Log in to DockerHub**  
+    - Script:
+      ```bash
+      echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      ```
+    - Descripción: Inicia sesión en DockerHub usando los secretos de GitHub.
+
+  - **Build and push Docker image**  
+    - Script:
+      ```bash
+      cd ./backend
+      docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest .
+      docker push ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest
+      ```
+    - Descripción: Construye y sube la imagen Docker del backend a DockerHub.
+
+### 2. Deploy
+
+- **Runs-on**: `ubuntu-latest`
+- **Dependencies**: Este job depende del job `build`.
+- **Steps**:
+  - **Run deployment script via SSH**  
+    - Usa: `appleboy/ssh-action@v0.1.7`
+    - Configuración:
+      - `host`: `${{ secrets.EC2_HOST }}`
+      - `username`: `${{ secrets.EC2_USER }}`
+      - `key`: `${{ secrets.EC2_KEY }}`
+      - **Script**:
+        ```bash
+        docker pull ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest
+        docker stop backend-ayd-container || true
+        docker rm backend-ayd-container || true
+        docker run -d --name backend-ayd-container --env-file /home/ubuntu/ayd/AyD1S2-Proyecto_F1_9/backend/.env -p ${{ secrets.PORT }}:4000 ${{ secrets.DOCKER_USERNAME }}/backend-ayd-image:latest
+        ```
+    - Descripción: Realiza el despliegue del contenedor Docker en el servidor de producción.
+
+## Notas
+
+- Este pipeline requiere que los secretos estén configurados correctamente en GitHub para evitar fallos en los pasos que dependen de ellos.
+- Hay que asegurarse de que el servidor de despliegue tenga configurado el archivo `.env` y los permisos necesarios para Docker.
+
+
+
+# CI/CD Pipeline for Frontend
+
+Este pipeline se encarga de realizar las tareas de integración continua y despliegue para el proyecto frontend, específicamente para una aplicación React. A continuación se detallan los pasos y configuraciones.
+
+## Pipeline Configuration
+
+- **Nombre**: `CI/CD Pipeline frontend`
+- **Trigger**: Se ejecuta en los pull requests hacia la rama `main`.
+
+## Jobs
+
+### 1. Build
+
+- **Runs-on**: `ubuntu-latest`
+- **Steps**:
+  - **Checkout code**  
+    - Usa: `actions/checkout@v3`
+    - Descripción: Clona el repositorio en la máquina virtual.
+
+  - **Set up Node.js**  
+    - Usa: `actions/setup-node@v3`
+    - Configuración: `node-version: '18'`
+    - Descripción: Instala y configura Node.js versión 18.x.
+
+  - **Set environment variables**  
+    - Script:
+      ```bash
+      cd ./frontend/ayd-storage
+      echo "REACT_APP_API_HOST=${{ secrets.REACT_APP_API_HOST }}" >> .env
+      echo "REACT_APP_S3_URL=${{ secrets.REACT_APP_S3_URL }}" >> .env
+      ```
+    - Descripción: Configura las variables de entorno necesarias para el frontend en el archivo `.env` usando los secretos de GitHub.
+
+  - **Install dependencies**  
+    - Script:
+      ```bash
+      cd ./frontend/ayd-storage
+      npm install
+      ```
+    - Descripción: Instala las dependencias del proyecto frontend.
+
+  - **Disable CI strict mode**  
+    - Script:
+      ```bash
+      unset CI
+      ```
+    - Descripción: Desactiva el modo estricto de CI para evitar errores en la compilación de la app de React.
+
+  - **Build React app**  
+    - Script:
+      ```bash
+      cd ./frontend/ayd-storage
+      CI=false npm run build
+      ```
+    - Descripción: Compila la aplicación React para producción.
+
+  - **Upload build artifact**  
+    - Usa: `actions/upload-artifact@v3`
+    - Configuración:
+      - `name`: `react-build-ayd-storage`
+      - `path`: `./frontend/ayd-storage/build`
+    - Descripción: Sube el artefacto compilado para que esté disponible en el job de despliegue.
+
+### 2. Deploy
+
+- **Runs-on**: `ubuntu-latest`
+- **Dependencies**: Este job depende del job `build`.
+- **Steps**:
+  - **Download build artifact**  
+    - Usa: `actions/download-artifact@v3`
+    - Configuración:
+      - `name`: `react-build-ayd-storage`
+      - `path`: `./build`
+    - Descripción: Descarga el artefacto compilado de la aplicación React.
+
+  - **Configure AWS credentials**  
+    - Usa: `aws-actions/configure-aws-credentials@v2`
+    - Configuración:
+      - `aws-access-key-id`: `${{ secrets.ACCESS_KEY_ID }}`
+      - `aws-secret-access-key`: `${{ secrets.SECRET_ACCESS_KEY }}`
+      - `aws-region`: `${{ secrets.REGION }}`
+    - Descripción: Configura las credenciales de AWS para realizar el despliegue en S3.
+
+  - **Sync build folder to S3**  
+    - Script:
+      ```bash
+      aws s3 sync ./build s3://${{ secrets.BUCKET_FRONTEND }} --delete
+      ```
+    - Descripción: Sincroniza el contenido de la carpeta `build` con el bucket de S3 configurado, eliminando archivos obsoletos en el bucket.
+
+## Notas
+
+- Este pipeline requiere que los secretos de AWS y otras configuraciones estén correctamente establecidos en GitHub.
+- El bucket S3 configurado en `BUCKET_FRONTEND` debe permitir el acceso a los archivos estáticos para que la aplicación esté disponible públicamente.
+
+
+
+
