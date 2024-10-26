@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import '../../../styles/Sidebar.css';
 import { List, Stack, Toolbar, Typography, Divider, Box, Button } from "@mui/material";
@@ -16,6 +16,8 @@ import colorConfigs from "../../../configs/colorConfigs";
 import { useNavigate } from "react-router-dom";
 import Feedback from '@mui/icons-material/Feedback';  //icono para las solicitudes
 import { resetAction } from "../../../redux/features/storageBarSlice";
+import ShareIcon from '@mui/icons-material/Share';
+
 
 const Sidebar = () => {
   const actionTriggered = useSelector((state) => {
@@ -24,11 +26,13 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   // Calcula el porcentaje de almacenamiento utilizado
 
-  const userType  = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
+  const userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
   const [usedStorage, setUsedStorage] = useState(0);
   const [totalStorage, setTotalStorage] = useState(0); //varia dependiendo del plan del usuario
   const [structDB, setStructDB] = useState([]);
   const navigate = useNavigate();
+
+  let showSharedIcon = false;
 
   const sideBarItems = [
     {
@@ -111,6 +115,7 @@ const Sidebar = () => {
       },
       userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
     },
+    ,
   ]
 
   useEffect(() => {
@@ -124,16 +129,18 @@ const Sidebar = () => {
   useEffect(() => {
     //TODO: Verificar en el localStorage el tipo de usuario y mostrar los items correspondientes con un filter
     //userType = localStorage.getItem('USUARIO') ? JSON.parse(localStorage.getItem('USUARIO')).ROL : undefined;
-    let filteredItems = [];
     if (!userType) { // Si no hay usuario logueado
       navigate('/');
-    } else {
-      filteredItems = sideBarItems.filter(item => item.userType === userType);
-    }
-
-    setStructDB(filteredItems);
+    } 
     fetchStorage();
+    fetchShowSharedIcon();
   }, []);
+
+  const filtrarItems = () => {
+    let filteredItems = [];
+    filteredItems = sideBarItems.filter(item => item.userType === userType);
+    setStructDB(filteredItems);
+  }
 
   const fetchStorage = async () => {
     //obtenemos los datos del uso de almacenamiento
@@ -156,6 +163,46 @@ const Sidebar = () => {
         }
       })
       .catch(error => console.error('Error:', error));
+  }
+
+  const fetchShowSharedIcon = async () => {
+    //hacemos la peticion para saber si el usuario tiene archivos compartidos
+    const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+    if (!usuario) return;
+    fetch(`${process.env.REACT_APP_API_HOST}/showSharedIconInSideBar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idUsuario: usuario.ID_USUARIO })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 200) {
+          if (data.icon) {
+            if (showSharedIcon) return;
+            showSharedIcon = true;
+            sideBarItems.push({
+              level: 0,
+              state: "shared-with-me",
+              path: "/shared-with-me",
+              sidebarProps: {
+                icon: <ShareIcon />,
+                displayText: "Shared with me",
+              },
+              userType: 2, // Tipo de usuario que puede ver este item. 1: Administrador, 2: Cliente, 3: Empleado         
+            },)
+
+            
+          }
+        }
+        filtrarItems();
+      }
+      )
+      .catch(error => {
+        console.error('Error:', error);
+        filtrarItems();
+      })
   }
 
   return (
@@ -201,7 +248,7 @@ const Sidebar = () => {
             borderColor: "rgb(255 255 255 / 30%)"
           }}
         />
-        {userType === 2 ? <StorageBar  used={usedStorage} total={totalStorage} />: null}        
+        {userType === 2 ? <StorageBar used={usedStorage} total={totalStorage} /> : null}
       </List>
 
       <Box sx={{ position: 'absolute', bottom: 0, width: '100%' }}>

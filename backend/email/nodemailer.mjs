@@ -52,3 +52,16 @@ export const warningMail = (email, name, confirmationLink) => {
             <a href="${confirmationLink}">Reactivate Account</a>`
     }
 }
+
+export const shareMail = (email, owner, destinationUser, item) => {
+    return {
+        from: process.env.EMAIL_ORIGIN,
+        to: email,
+        subject: 'Share item of AyDStorage',
+        html: `<p>Hello ${destinationUser},</p>
+            <p>${owner} shared an item with you:</p>
+            <p>${item}</p>
+            <p>Go to AyDStorage to see the item.</p>
+            <a href="${process.env.FRONT_URL}">AyDStorage</a>`
+    }
+}

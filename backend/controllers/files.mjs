@@ -17,7 +17,7 @@ const getRootFolder = async (req, res) => {
                                                     AND CARPETA.ID_CARPETA_PADRE IS NULL 
                                                     AND CARPETA.ID_CUENTA = ?
                                                     AND CARPETA.NOMBRE =''`, [username, id_account])
-        
+
         if (rows.length === 0) return res.status(404).json({ status: 404, message: 'Root folder not found' })
 
         return res.status(200).json({ status: 200, rootFolder: rows[0].ID_CARPETA })
@@ -33,22 +33,29 @@ const getChildItems = async (req, res) => {
         const { idFolder } = req.body
 
         //retornamos los archivos y carpetas hijos de la carpeta
-        const [rows, fields] = await db.query(` SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION
-                                                ,(  SELECT SUM(CANT)
-                                                    FROM (
-                                                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
-                                                        UNION 
-                                                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
-                                                        ) AS CHILDREN
-                                                ) AS CHILDREN
-                                                FROM CARPETA
-                                                WHERE ELIMINADO = 0 and CARPETA.ID_CARPETA_PADRE = ?
-                                                ORDER BY CARPETA.NOMBRE ASC`, [idFolder])
+        const [rows, fields] = await db.query(` 
+            SELECT CARPETA.ID_CARPETA, CARPETA.NOMBRE, CARPETA.FAVORITO, CARPETA.CREA, CARPETA.MODIFICA, CARPETA.CREACION, CARPETA.MODIFICACION,
+                   (SELECT SUM(CANT)
+                    FROM (
+                        SELECT COUNT(*) CANT FROM CARPETA WHERE CARPETA.ID_CARPETA_PADRE = CARPETA.ID_CARPETA 
+                        UNION 
+                        SELECT COUNT(*) FROM ARCHIVO WHERE ARCHIVO.ID_CARPETA = CARPETA.ID_CARPETA
+                    ) AS CHILDREN
+                   ) AS CHILDREN,
+                   (SELECT COUNT(*) FROM COMPARTIR WHERE COMPARTIR.ID_CARPETA = CARPETA.ID_CARPETA AND TIPO_COMPARTIR = 2) AS TOTAL_COMPARTIDO
+            FROM CARPETA
+            WHERE ELIMINADO = 0 AND CARPETA.ID_CARPETA_PADRE = ?
+            ORDER BY CARPETA.NOMBRE ASC`, [idFolder]);
 
-        const [rows2, fields2] = await db.query(`   SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION
-                                                    FROM ARCHIVO
-                                                    WHERE ELIMINADO = 0 and ARCHIVO.ID_CARPETA = ?
-                                                    ORDER BY ARCHIVO.NOMBRE ASC`, [idFolder])
+
+        const [rows2, fields2] = await db.query(`
+                SELECT ARCHIVO.ID_ARCHIVO, ARCHIVO.NOMBRE, ARCHIVO.FAVORITO, ARCHIVO.TAMANO_B, ARCHIVO.KEY_S3, ARCHIVO.CREA, ARCHIVO.MODIFICA, ARCHIVO.CREACION, ARCHIVO.MODIFICACION,
+                       (SELECT COUNT(*) FROM COMPARTIR WHERE COMPARTIR.ID_ARCHIVO = ARCHIVO.ID_ARCHIVO AND TIPO_COMPARTIR = 1) AS TOTAL_COMPARTIDO
+                FROM ARCHIVO
+                WHERE ELIMINADO = 0 AND ARCHIVO.ID_CARPETA = ?
+                ORDER BY ARCHIVO.NOMBRE ASC
+            `, [idFolder]);
+
 
         const folders = rows.map(folder => {
             return {
@@ -60,7 +67,8 @@ const getChildItems = async (req, res) => {
                 modified: folder.MODIFICA,
                 createdDate: folder.CREACION,
                 modifiedDate: folder.MODIFICACION,
-                children: folder.CHILDREN
+                children: folder.CHILDREN,
+                shared: folder.TOTAL_COMPARTIDO
             }
         });
 
@@ -76,6 +84,7 @@ const getChildItems = async (req, res) => {
                 modified: file.MODIFICA,
                 createdDate: file.CREACION,
                 modifiedDate: file.MODIFICACION,
+                shared: file.TOTAL_COMPARTIDO
             }
         });
 
@@ -210,6 +219,77 @@ const createFolder = async (req, res) => {
     }
 }
 
+const addFolderTags = async (req, res) => {
+    try {
+        const { folderID, tags, deleteds } = req.body
+
+        let query = ''
+
+        for(const tag of tags) {
+            query += (query !== '' ? '\n\tUNION' : '') + `\n\tSELECT '${tag}' WHERE NOT EXISTS (SELECT 1 FROM ETIQUETA WHERE NOMBRE = '${tag}')`
+        }
+
+        await db.query(`INSERT INTO ETIQUETA (NOMBRE) ${query}`)
+
+        query = ''
+        for(const tag of tags) {
+            query += (query !== '' ? ' OR ' : '') + `NOMBRE = '${tag}'`
+        }
+
+        const [tagIDs] = await db.query(`SELECT ID_ETIQUETA FROM ETIQUETA WHERE ${query}`)
+
+        query = ''
+        for(const tagID of tagIDs) {
+            query += (query !== '' ? '\n\tUNION' : '') + `\n\tSELECT ${folderID}, ${tagID.ID_ETIQUETA} WHERE NOT EXISTS (SELECT 1 FROM CARPETA_ETIQUETA WHERE ID_CARPETA = '${folderID}' AND ID_ETIQUETA = '${tagID.ID_ETIQUETA}')`
+        }
+
+        await db.query(`INSERT INTO CARPETA_ETIQUETA (ID_CARPETA, ID_ETIQUETA) ${query}`)
+
+        if(deleteds.length > 0) {
+            query = ''
+            for(const tag of deleteds) {
+                query += (query !== '' ? ' OR ' : '') + `NOMBRE = '${tag}'`
+            }
+
+            const [tagIDs] = await db.query(`SELECT ID_ETIQUETA FROM ETIQUETA WHERE ${query}`)
+
+            query = ''
+            for(const id of tagIDs) {
+                query += (query !== '' ? ' OR ' : '') + `(ID_CARPETA = ${folderID} AND ID_ETIQUETA = ${id.ID_ETIQUETA})`
+            }
+
+            await db.query(`DELETE FROM CARPETA_ETIQUETA WHERE ${query}`)
+        }
+
+        return res.status(200).json({ status: 200, icon: 'success'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error'})
+    }
+}
+
+const getFolderTags = async (req, res) => {
+    try {
+
+        const { folderID } = req.query
+
+        let [ tags ] = await db.query(`
+        SELECT NOMBRE FROM ETIQUETA e1 WHERE e1.ID_ETIQUETA IN (
+            SELECT e2.ID_ETIQUETA FROM CARPETA_ETIQUETA e2 WHERE
+            e2.ID_CARPETA = ${folderID}
+        )`)
+
+        for(let i = 0; i < tags.length; i ++) {
+            tags[i] = tags[i].NOMBRE
+        }
+
+        return res.status(200).json({ status: 200, icon: 'success', tags })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 const deleteFile = async (req, res) => {
     try {
         //sacamos los valores del json
@@ -331,7 +411,7 @@ const emptyTrash = async (req, res) => {
                 await db.query(`DELETE FROM ARCHIVO WHERE ID_ARCHIVO = ?`, [listItems[i].id])
             }
         }
-        
+
         return res.status(200).json({ status: 200, message: 'Trash emptied' })
     }
     catch (error) {
@@ -403,6 +483,59 @@ const getFiles = async (idFolder) => { //funcion para obtener los archivos y car
     }
 }
 
+const getDetails = async (req, res) => {
+    try {
+        const { parentID, objectID, type } = req.query
+
+        console.log({ parentID, objectID, type })
+
+        const [ rows1 ] = await db.query(
+        `WITH RECURSIVE CarpetaPath AS (
+            SELECT 
+                ID_CARPETA, 
+                NOMBRE, 
+                ID_CARPETA_PADRE,
+                NOMBRE AS path
+            FROM 
+                CARPETA
+            WHERE 
+                ID_CARPETA = ${parentID}
+
+            UNION ALL
+
+            SELECT 
+                c.ID_CARPETA, 
+                c.NOMBRE, 
+                c.ID_CARPETA_PADRE,
+                CONCAT(c.NOMBRE, '/', cp.path) AS path
+            FROM 
+                CARPETA c
+            INNER JOIN 
+                CarpetaPath cp 
+            ON 
+                c.ID_CARPETA = cp.ID_CARPETA_PADRE
+        )
+        SELECT path AS full_path
+        FROM CarpetaPath
+        WHERE ID_CARPETA_PADRE IS NULL;`)
+
+        const [ rows2 ] = await db.query(
+            type == 0 ?
+            `SELECT 'Folder' AS TIPO, NOMBRE, CREACION, MODIFICACION FROM CARPETA
+            WHERE ID_CARPETA = ${objectID}`
+            :
+            `SELECT 'File' AS TIPO, NOMBRE, CREACION, MODIFICACION, TAMANO_B FROM ARCHIVO
+            WHERE ID_ARCHIVO = ${objectID}`
+        )
+        rows2[0].PATH = rows1[0].full_path.length > 0 ? rows1[0].full_path : '/'
+
+        return res.status(200).json({ status: 200, icon: 'success', details: rows2[0] })
+    } catch(error) {
+        console.log(error)
+        return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
+    }
+}
+
 const rename = async (req, res) => {
     try {
         const { idRename, idPadre, newName, type } = req.body
@@ -411,12 +544,12 @@ const rename = async (req, res) => {
             SELECT 1
             FROM ${type === 'file' ? 'ARCHIVO' : 'CARPETA'}
             WHERE NOMBRE = ? AND ${type === 'file' ? 'ID_CARPETA' : 'ID_CARPETA_PADRE'} = ?`, [newName, idPadre])
-        if(rows.length === 0) {
+        if (rows.length === 0) {
             await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET NOMBRE = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?;`, [newName, idRename])
             return res.status(200).json({ status: 200, icon: 'success', message: '' })
         }
         return res.status(202).json({ status: 202, icon: 'warning', message: `The ${type} named ${newName} already exists!` })
-    } catch(error) {
+    } catch (error) {
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
 }
@@ -428,7 +561,7 @@ const download = async (req, res) => {
         const [file] = rows
 
         return res.status(200).json({ status: 200, icon: 'success', message: '', url: file.KEY_S3 })
-    } catch(error) {
+    } catch (error) {
         console.log(error)
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
@@ -501,7 +634,7 @@ const setFavItem = async (req, res) => {
         const [item] = rows
         await db.query(`UPDATE ${type === 'file' ? 'ARCHIVO' : 'CARPETA'} SET FAVORITO = ? WHERE ID_${type === 'file' ? 'ARCHIVO' : 'CARPETA'} = ?`, [item.FAVORITO === 0 ? 1 : 0, idItem])
         return res.status(200).json({ status: 200, icon: 'success', message: '', fav: item.FAVORITO === 0 ? 1 : 0 })
-    } catch(error) {
+    } catch (error) {
         return res.status(500).json({ status: 500, icon: 'error', message: 'Internal server error' })
     }
 }
@@ -518,5 +651,8 @@ export const files = {
     rename,
     download,
     getFavsItems,
-    setFavItem
+    setFavItem,
+    addFolderTags,
+    getFolderTags,
+    getDetails,
 }
