@@ -54,7 +54,7 @@ export default function Details({ details, visible, setVisible }) {
                     </Typography>
                     <Divider sx={{ backgroundColor: '#FFFFFF', my: 1 }} />
 
-                    {details.TIPO == 'File' && <><Typography variant="body1" sx={{ color: '#FFFFFF' }}>
+                    {details && details.TIPO == 'File' && <><Typography variant="body1" sx={{ color: '#FFFFFF' }}>
                         <strong>Size:</strong> {formatSize(details?.TAMANO_B)}
                     </Typography>
                     <Divider sx={{ backgroundColor: '#FFFFFF', my: 1 }} /></>}
