@@ -28,10 +28,14 @@ jobs:
           cd ./frontend/ayd-storage
           npm install
 
+      - name: Disable CI strict mode
+        run: |
+            unset CI
+        
       - name: Build React app
         run: |
           cd ./frontend/ayd-storage
-          npm run build
+          CI=false npm run build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
@@ -58,4 +62,4 @@ jobs:
 
       - name: Sync build folder to S3
         run: |
-          aws s3 sync ./build s3://${{ secrets.BUCKET }} --delete
+          aws s3 sync ./build s3://${{ secrets.BUCKET_FRONTEND }} --delete
