@@ -1,10 +1,10 @@
 import request from 'supertest';
-import app from '../server.mjs'; // Puedes seguir usando import para tus módulos
+import app from '../index.test.mjs'; // Puedes seguir usando import para tus módulos
 
  test('POST /uploadFile, debe retornar un atributo status=200, file', async () => {
    const res = await request(app).post('/uploadFile').send({
     idUser: 2,
-    username: 'tiky',
+    username: 'test',
     folder: 1,
     file: {
       name: 'test.txt',
@@ -22,11 +22,11 @@ import app from '../server.mjs'; // Puedes seguir usando import para tus módulo
 test('POST /createFolder, debe retornar un atributo status=200, y el id del folder', async () => {
     const res = await request(app).post('/createFolder').send({
         idUser: 2,
-        username: 'tiky',
+        username: 'test',
         parentFolder: 1,
-        name: 'test'
+        name: 'test folder'
     });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('status', 200);
-    expect(res.body).toHaveProperty('file');
+    expect(res.body).toHaveProperty('folder');
 }, 30000); // 30 segundos de timeout

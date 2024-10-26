@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { React, useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2';
 
-export default function Options({ contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera }) {
+export default function Options({ contextMenu, visible, setVisible, activeRename, activeDetails, activeAddTags, activeDelete, activeRestore, esPapelera, activeShare, onSetFavItem, activeStopShare, showStopShare }) {
     const contextMenuRef = useRef(null);
 
     const handleDownload = async () => {
@@ -17,13 +17,6 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
         const data = await response.json()
 
         if(response.ok) {
-            // const link = document.createElement('a');
-            // link.href = `${process.env.REACT_APP_S3_URL}/${data.url}`;
-            // link.setAttribute('download', contextMenu.item.name);
-            // document.body.appendChild(link);
-            // link.click();
-            // document.body.removeChild(link);
-
             try {
                 const response = await fetch(`${process.env.REACT_APP_S3_URL}/${data.url}`);
                 const blob = await response.blob();
@@ -66,6 +59,32 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [visible, setVisible]);
+
+    const fetchSetFavItem = async (idItem, type) => {
+        if (!idItem || !type) return;
+        fetch(`${process.env.REACT_APP_API_HOST}/setFavorite`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ idItem, type })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    const usuario = JSON.parse(localStorage.getItem('USUARIO'));
+                    if (data.fav === 1) {
+                        Swal.fire('Added to favorites')
+                    } else {
+                        Swal.fire('Removed from favorites')
+                        onSetFavItem(usuario.ID_CUENTA, contextMenu.idFolder);
+                    }
+                } else {
+                    Swal.fire('Error', 'An error occurred', 'error');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    };
 
     if (!visible) return null;
 
@@ -112,6 +131,45 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
                 </Button>
             )}
 
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeDetails}
+                >
+                    Details
+                </Button>
+            )}
+
+            {contextMenu.item.type !== 'file' && !esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeAddTags}
+                >
+                    Tags
+                </Button>
+            )}
 
             {contextMenu.item.type === 'file' && !esPapelera && <Button
                 variant="text"
@@ -131,8 +189,7 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
                 Download
             </Button>}
 
-            {!esPapelera && (
-                <Button
+            {!esPapelera && <Button
                 variant="text"
                 color="inherit"
                 sx={{
@@ -140,17 +197,76 @@ export default function Options({ contextMenu, visible, setVisible, activeRename
                     width: '100%',
                     justifyContent: 'flex-start',
                     textTransform: 'none',
-                    color: '#ff6b6b', // Texto rojo claro para Delete
+                    color: '#ffffff', // Texto claro para el fondo oscuro
                     '&:hover': {
-                        backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
                     },
                 }}
-                onClick={activeDelete}
+                onClick={() => fetchSetFavItem(contextMenu.item.id, contextMenu.item.type)}
             >
-                Delete
-            </Button>
+                {contextMenu.item.favorite === 1 ? 'Remove from favorites' : 'Add to favorites'}
+            </Button>}
+
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeShare}
+                >
+                    Share
+                </Button>
             )}
-            
+
+            {!esPapelera && showStopShare && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ffffff', // Texto claro para el fondo oscuro
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Efecto hover sutil
+                        },
+                    }}
+                    onClick={activeStopShare}
+                >
+                    Stop sharing
+                </Button>
+            )}
+
+            {!esPapelera && (
+                <Button
+                    variant="text"
+                    color="inherit"
+                    sx={{
+                        p: 1,
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        color: '#ff6b6b', // Texto rojo claro para Delete
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)', // Hover para Delete
+                        },
+                    }}
+                    onClick={activeDelete}
+                >
+                    Delete
+                </Button>
+            )}
+
 
             {esPapelera && (
                 <Button

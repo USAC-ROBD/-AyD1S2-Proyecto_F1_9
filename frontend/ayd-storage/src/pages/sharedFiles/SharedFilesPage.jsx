@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
-import FileBrowser from "../../components/FileBrowser/FileBrowser";
+import SharedFiles from "../../components/SharedFiles/SharedFiles";
 import FloatingActionButtons from "../../components/iconsFav/floatingActionButtons";
 
-const PapeleraPage = () => {
+const SharedFilesPage = () => {
 
 
     return (
         <div>
-            <FileBrowser esPapelera={true} esFavoritos={false} />
+            <SharedFiles />
             <FloatingActionButtons />
         </div>
     )
 }
 
-export default PapeleraPage;
+export default SharedFilesPage;
