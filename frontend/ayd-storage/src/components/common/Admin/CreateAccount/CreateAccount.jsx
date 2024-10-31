@@ -20,8 +20,8 @@ export default function CreateAccount() {
     const [phone, setPhone] = useState('')
     const [role, setRole] = useState(2);
     const [roleOptions] = useState([
-        { label: 'Cliente', value: 2 },
-        { label: 'Invitado', value: 3 }
+        { label: 'Customer', value: 2 },
+        { label: 'Employee', value: 3 }
     ]);
     const [storagePackage, setStoragePackage] = useState(1);
     const [storagePackageOptions] = useState([
