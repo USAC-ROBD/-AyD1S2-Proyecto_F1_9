@@ -70,7 +70,7 @@ const signup = async (req, res) => {
         const [result3] = await db.query(`
             INSERT INTO CARPETA(NOMBRE, ID_CARPETA_PADRE, ID_CUENTA) VALUES ('', NULL, ?)`, [result2.insertId])
         
-        const confirmationLink = `${process.env.REACT_APP_API_HOST}/confirmation/${result.insertId}`
+        const confirmationLink = `${process.env.FRONT_URL}/confirmation/${result.insertId}`
         const mailOptions = getMailOptions(email, name, confirmationLink)
 
         transporter.sendMail(mailOptions, (error, info) => {
