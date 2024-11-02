@@ -7,6 +7,7 @@ const getRequests = async (req, res) => {
             const requestsChanceStorage = await db.query(`SELECT 
                     SCA.ID_CUENTA,
                     SCA.ID_SOLICITUD,
+                    SCA.ID_PAQUETE,
                     U.ID_USUARIO,
                     SCA.ESTADO_SOLICITUD,
                     CONCAT(U.NOMBRE, ' ', U.APELLIDO) AS NOMBRE_USUARIO, 

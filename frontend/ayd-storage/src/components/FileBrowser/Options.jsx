@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Box, Button } from '@mui/material';
 import Swal from 'sweetalert2';
 
-export default function Options({ type, contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera }) {
+export default function Options({ contextMenu, visible, setVisible, activeRename, activeDelete, activeRestore, esPapelera }) {
     const contextMenuRef = useRef(null);
 
     const handleDownload = async () => {
@@ -16,11 +16,38 @@ export default function Options({ type, contextMenu, visible, setVisible, active
 
         const data = await response.json()
 
+        if(response.ok) {
+            // const link = document.createElement('a');
+            // link.href = `${process.env.REACT_APP_S3_URL}/${data.url}`;
+            // link.setAttribute('download', contextMenu.item.name);
+            // document.body.appendChild(link);
+            // link.click();
+            // document.body.removeChild(link);
+
+            try {
+                const response = await fetch(`${process.env.REACT_APP_S3_URL}/${data.url}`);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                const url = window.URL.createObjectURL(blob);
+                link.href = url;
+                link.setAttribute('download', contextMenu.item.name); // Nombre del archivo para la descarga
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
+                window.URL.revokeObjectURL(url); // Liberar memoria
+            } catch (error) {
+                console.error('Error downloading the file:', error);
+            }
+
+            setVisible(false)
+            return
+        }
+
         Swal.fire({
             icon: data.icon,
             title: data.message,
             showConfirmButton: false,
-            timer: data.icon === 'success' ? 800 : 2000
+            timer: 2000
         });
 
         setVisible(false)

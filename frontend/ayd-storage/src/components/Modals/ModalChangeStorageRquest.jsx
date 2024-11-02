@@ -63,7 +63,7 @@ const ModalChangeStorageRequest = ({ open, handleClose, handleSubmit }) => {
     async function makeRequest(email_, id_paquete){
         try {
     
-            const response = await fetch("http://localhost:4000/changeStorageRequest", {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/changeStorageRequest`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
